@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>To-Do List - Task Manager</title>
+    <title>Золотое Яблоко - Digital Wallet</title>
     <style>
         * {
             margin: 0;
@@ -13,391 +13,655 @@
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+            color: #fff;
             min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
             padding: 20px;
         }
 
         .container {
-            background: white;
-            border-radius: 20px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-            width: 100%;
-            max-width: 500px;
-            padding: 40px;
+            max-width: 1200px;
+            margin: 0 auto;
         }
 
-        .header {
+        header {
             text-align: center;
-            margin-bottom: 30px;
+            margin-bottom: 40px;
         }
 
-        .header h1 {
-            color: #333;
-            font-size: 32px;
+        .logo {
+            font-size: 48px;
+            font-weight: bold;
             margin-bottom: 10px;
+            background: linear-gradient(135deg, #ffd700, #ffed4e);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
 
-        .header p {
-            color: #999;
+        .tagline {
+            color: #aaa;
             font-size: 14px;
         }
 
-        .input-group {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 30px;
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 40px;
         }
 
-        #taskInput {
+        .card {
+            background: linear-gradient(135deg, #2a2a2a 0%, #1f1f1f 100%);
+            border: 1px solid #3a3a3a;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+            transition: transform 0.3s, border-color 0.3s;
+        }
+
+        .card:hover {
+            border-color: #ffd700;
+            transform: translateY(-5px);
+        }
+
+        .card-title {
+            font-size: 18px;
+            color: #ffd700;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+
+        .balance-display {
+            font-size: 48px;
+            font-weight: bold;
+            color: #ffed4e;
+            margin-bottom: 10px;
+            font-family: 'Courier New', monospace;
+        }
+
+        .balance-label {
+            color: #888;
+            font-size: 14px;
+            margin-bottom: 20px;
+        }
+
+        .balance-info {
+            display: flex;
+            justify-content: space-between;
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .info-item {
+            flex: 1;
+            background: rgba(255, 215, 0, 0.1);
+            padding: 15px;
+            border-radius: 12px;
+            border-left: 3px solid #ffd700;
+        }
+
+        .info-label {
+            color: #888;
+            font-size: 12px;
+            margin-bottom: 5px;
+        }
+
+        .info-value {
+            font-size: 20px;
+            color: #ffed4e;
+            font-weight: bold;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+        }
+
+        .btn {
             flex: 1;
             padding: 15px;
-            border: 2px solid #e0e0e0;
-            border-radius: 12px;
-            font-size: 16px;
-            transition: border-color 0.3s;
-        }
-
-        #taskInput:focus {
-            outline: none;
-            border-color: #667eea;
-        }
-
-        #addBtn {
-            padding: 15px 30px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
             border: none;
             border-radius: 12px;
             font-size: 16px;
             font-weight: 600;
             cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.2s;
+            transition: all 0.3s;
         }
 
-        #addBtn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        .btn-primary {
+            background: linear-gradient(135deg, #ffd700, #ffed4e);
+            color: #000;
         }
 
-        #addBtn:active {
-            transform: translateY(0);
+        .btn-primary:hover {
+            transform: scale(1.05);
+            box-shadow: 0 10px 30px rgba(255, 215, 0, 0.3);
         }
 
-        .stats {
+        .btn-secondary {
+            background: rgba(255, 215, 0, 0.2);
+            color: #ffd700;
+            border: 1px solid #ffd700;
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 215, 0, 0.3);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal.active {
             display: flex;
-            justify-content: space-around;
-            margin-bottom: 20px;
-            padding-bottom: 20px;
-            border-bottom: 2px solid #f0f0f0;
         }
 
-        .stat-item {
-            text-align: center;
+        .modal-content {
+            background: #1f1f1f;
+            border: 1px solid #3a3a3a;
+            border-radius: 20px;
+            padding: 40px;
+            width: 90%;
+            max-width: 400px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.7);
         }
 
-        .stat-number {
+        .modal-title {
             font-size: 24px;
-            font-weight: bold;
-            color: #667eea;
+            color: #ffd700;
+            margin-bottom: 20px;
+            font-weight: 600;
         }
 
-        .stat-label {
-            font-size: 12px;
-            color: #999;
-            margin-top: 5px;
+        .form-group {
+            margin-bottom: 20px;
         }
 
-        .task-list {
+        .form-label {
+            display: block;
+            color: #aaa;
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 12px;
+            background: #2a2a2a;
+            border: 1px solid #3a3a3a;
+            border-radius: 10px;
+            color: #fff;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #ffd700;
+            box-shadow: 0 0 10px rgba(255, 215, 0, 0.2);
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+        }
+
+        .btn-close {
+            flex: 1;
+            padding: 12px;
+            background: transparent;
+            border: 1px solid #3a3a3a;
+            color: #aaa;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .btn-close:hover {
+            border-color: #ffd700;
+            color: #ffd700;
+        }
+
+        .transaction-section {
+            grid-column: 1 / -1;
+        }
+
+        .transaction-list {
             max-height: 400px;
             overflow-y: auto;
         }
 
-        .task-item {
+        .transaction-item {
             display: flex;
+            justify-content: space-between;
             align-items: center;
             padding: 15px;
-            background: #f9f9f9;
+            background: rgba(255, 215, 0, 0.05);
             border-radius: 12px;
             margin-bottom: 10px;
-            gap: 12px;
+            border-left: 3px solid #ffd700;
             transition: all 0.3s;
         }
 
-        .task-item:hover {
-            background: #f0f0f0;
+        .transaction-item:hover {
+            background: rgba(255, 215, 0, 0.1);
             transform: translateX(5px);
         }
 
-        .task-item.completed {
-            opacity: 0.6;
-        }
-
-        .task-item.completed .task-text {
-            text-decoration: line-through;
-            color: #999;
-        }
-
-        .checkbox {
-            width: 24px;
-            height: 24px;
-            cursor: pointer;
-            accent-color: #667eea;
-        }
-
-        .task-text {
+        .transaction-info {
             flex: 1;
-            color: #333;
-            font-size: 16px;
-            word-break: break-word;
         }
 
-        .delete-btn {
-            background: #ff6b6b;
-            color: white;
-            border: none;
-            padding: 8px 12px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 14px;
-            transition: background 0.3s;
+        .transaction-type {
+            color: #ffd700;
+            font-weight: 600;
+            margin-bottom: 5px;
         }
 
-        .delete-btn:hover {
-            background: #ff5252;
+        .transaction-date {
+            color: #888;
+            font-size: 12px;
+        }
+
+        .transaction-amount {
+            font-size: 18px;
+            font-weight: bold;
+            font-family: 'Courier New', monospace;
+        }
+
+        .transaction-amount.send {
+            color: #ff6b6b;
+        }
+
+        .transaction-amount.receive {
+            color: #51cf66;
         }
 
         .empty-state {
             text-align: center;
             padding: 40px 20px;
-            color: #999;
+            color: #888;
         }
 
-        .empty-state-icon {
+        .empty-icon {
             font-size: 48px;
+            margin-bottom: 15px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+
+        .stat-card {
+            background: rgba(255, 215, 0, 0.05);
+            border: 1px solid #ffd700;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .stat-label {
+            color: #888;
+            font-size: 12px;
             margin-bottom: 10px;
         }
 
-        .clear-all {
-            width: 100%;
-            padding: 12px;
-            margin-top: 20px;
-            background: #f0f0f0;
-            border: none;
-            border-radius: 12px;
-            color: #ff6b6b;
-            font-weight: 600;
-            cursor: pointer;
-            transition: background 0.3s;
+        .stat-value {
+            font-size: 28px;
+            color: #ffed4e;
+            font-weight: bold;
+            font-family: 'Courier New', monospace;
         }
 
-        .clear-all:hover {
-            background: #e0e0e0;
-        }
-
-        .task-list::-webkit-scrollbar {
+        .transaction-list::-webkit-scrollbar {
             width: 8px;
         }
 
-        .task-list::-webkit-scrollbar-track {
-            background: #f1f1f1;
+        .transaction-list::-webkit-scrollbar-track {
+            background: rgba(255, 215, 0, 0.1);
             border-radius: 10px;
         }
 
-        .task-list::-webkit-scrollbar-thumb {
-            background: #667eea;
+        .transaction-list::-webkit-scrollbar-thumb {
+            background: #ffd700;
             border-radius: 10px;
         }
 
-        .task-list::-webkit-scrollbar-thumb:hover {
-            background: #764ba2;
-        }
-
-        @media (max-width: 500px) {
-            .container {
-                padding: 20px;
+        @media (max-width: 768px) {
+            .main-grid {
+                grid-template-columns: 1fr;
             }
 
-            .header h1 {
-                font-size: 24px;
+            .transaction-section {
+                grid-column: 1;
             }
 
-            .input-group {
+            .balance-display {
+                font-size: 36px;
+            }
+
+            .balance-info {
                 flex-direction: column;
             }
 
-            #addBtn {
-                width: 100%;
+            .action-buttons {
+                flex-direction: column;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
             }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="header">
-            <h1>✓ My Tasks</h1>
-            <p>Organize your day, one task at a time</p>
-        </div>
+        <header>
+            <div class="logo">🍎 Золотое Яблоко</div>
+            <div class="tagline">Безопасный Digital Wallet</div>
+        </header>
 
-        <div class="input-group">
-            <input type="text" id="taskInput" placeholder="Add a new task...">
-            <button id="addBtn">Add</button>
-        </div>
+        <div class="main-grid">
+            <!-- Баланс -->
+            <div class="card">
+                <div class="card-title">Ваш Баланс</div>
+                <div class="balance-display" id="balanceDisplay">0.00</div>
+                <div class="balance-label">Доступные средства</div>
 
-        <div class="stats">
-            <div class="stat-item">
-                <div class="stat-number" id="totalTasks">0</div>
-                <div class="stat-label">Total</div>
+                <div class="balance-info">
+                    <div class="info-item">
+                        <div class="info-label">Входящие</div>
+                        <div class="info-value" id="totalReceived">0.00</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Исходящие</div>
+                        <div class="info-value" id="totalSent">0.00</div>
+                    </div>
+                </div>
+
+                <div class="action-buttons">
+                    <button class="btn btn-primary" onclick="openSendModal()">Отправить</button>
+                    <button class="btn btn-secondary" onclick="openReceiveModal()">Получить</button>
+                </div>
             </div>
-            <div class="stat-item">
-                <div class="stat-number" id="completedTasks">0</div>
-                <div class="stat-label">Completed</div>
+
+            <!-- Статистика -->
+            <div class="card">
+                <div class="card-title">Статистика</div>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-label">Всего операций</div>
+                        <div class="stat-value" id="totalTransactions">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Входящих</div>
+                        <div class="stat-value" id="receiveCount">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Исходящих</div>
+                        <div class="stat-value" id="sendCount">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Средняя сумма</div>
+                        <div class="stat-value" id="avgAmount">0.00</div>
+                    </div>
+                </div>
             </div>
-            <div class="stat-item">
-                <div class="stat-number" id="remainingTasks">0</div>
-                <div class="stat-label">Remaining</div>
+
+            <!-- История транзакций -->
+            <div class="card transaction-section">
+                <div class="card-title">История Транзакций</div>
+                <div class="transaction-list" id="transactionList">
+                    <div class="empty-state">
+                        <div class="empty-icon">📋</div>
+                        <p>Нет транзакций. Начните отправлять или получать средства!</p>
+                    </div>
+                </div>
             </div>
         </div>
+    </div>
 
-        <div class="task-list" id="taskList">
-            <div class="empty-state">
-                <div class="empty-state-icon">📝</div>
-                <p>No tasks yet. Add one to get started!</p>
+    <!-- Модальное окно отправки -->
+    <div class="modal" id="sendModal">
+        <div class="modal-content">
+            <div class="modal-title">Отправить средства</div>
+            <div class="form-group">
+                <label class="form-label">Адрес получателя</label>
+                <input type="text" class="form-input" id="sendAddress" placeholder="Введите адрес">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Сумма (GA)</label>
+                <input type="number" class="form-input" id="sendAmount" placeholder="0.00" step="0.01">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Описание</label>
+                <input type="text" class="form-input" id="sendDescription" placeholder="Комментарий">
+            </div>
+            <div class="modal-buttons">
+                <button class="btn-close" onclick="closeSendModal()">Отменить</button>
+                <button class="btn btn-primary" style="flex: 1;" onclick="sendFunds()">Отправить</button>
             </div>
         </div>
+    </div>
 
-        <button class="clear-all" id="clearAllBtn">Clear All Completed Tasks</button>
+    <!-- Модальное окно получения -->
+    <div class="modal" id="receiveModal">
+        <div class="modal-content">
+            <div class="modal-title">Получить средства</div>
+            <div class="form-group">
+                <label class="form-label">Сумма (GA)</label>
+                <input type="number" class="form-input" id="receiveAmount" placeholder="0.00" step="0.01">
+            </div>
+            <div class="form-group">
+                <label class="form-label">От кого</label>
+                <input type="text" class="form-input" id="receiveSender" placeholder="Адрес отправителя">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Описание</label>
+                <input type="text" class="form-input" id="receiveDescription" placeholder="Комментарий">
+            </div>
+            <div class="modal-buttons">
+                <button class="btn-close" onclick="closeReceiveModal()">Отменить</button>
+                <button class="btn btn-primary" style="flex: 1;" onclick="receiveFunds()">Подтвердить</button>
+            </div>
+        </div>
     </div>
 
     <script>
-        const taskInput = document.getElementById('taskInput');
-        const addBtn = document.getElementById('addBtn');
-        const taskList = document.getElementById('taskList');
-        const totalTasksEl = document.getElementById('totalTasks');
-        const completedTasksEl = document.getElementById('completedTasks');
-        const remainingTasksEl = document.getElementById('remainingTasks');
-        const clearAllBtn = document.getElementById('clearAllBtn');
+        // Инициализация данных
+        let wallet = {
+            balance: 1000,
+            transactions: []
+        };
 
-        // Load tasks from localStorage
-        let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
-
-        // Render tasks on page load
-        renderTasks();
-
-        // Add task on button click
-        addBtn.addEventListener('click', addTask);
-
-        // Add task on Enter key
-        taskInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                addTask();
+        // Загрузка из localStorage
+        function loadWallet() {
+            const saved = localStorage.getItem('goldenAppleWallet');
+            if (saved) {
+                wallet = JSON.parse(saved);
             }
-        });
+        }
 
-        // Clear all completed tasks
-        clearAllBtn.addEventListener('click', clearCompleted);
+        // Сохранение в localStorage
+        function saveWallet() {
+            localStorage.setItem('goldenAppleWallet', JSON.stringify(wallet));
+        }
 
-        function addTask() {
-            const taskText = taskInput.value.trim();
+        // Обновление UI
+        function updateUI() {
+            document.getElementById('balanceDisplay').textContent = wallet.balance.toFixed(2);
 
-            if (taskText === '') {
-                alert('Please enter a task!');
+            let totalSent = 0, totalReceived = 0, sendCount = 0, receiveCount = 0;
+
+            wallet.transactions.forEach(tx => {
+                if (tx.type === 'send') {
+                    totalSent += tx.amount;
+                    sendCount++;
+                } else {
+                    totalReceived += tx.amount;
+                    receiveCount++;
+                }
+            });
+
+            document.getElementById('totalSent').textContent = totalSent.toFixed(2);
+            document.getElementById('totalReceived').textContent = totalReceived.toFixed(2);
+            document.getElementById('totalTransactions').textContent = wallet.transactions.length;
+            document.getElementById('sendCount').textContent = sendCount;
+            document.getElementById('receiveCount').textContent = receiveCount;
+
+            const avgAmount = wallet.transactions.length > 0 
+                ? (wallet.transactions.reduce((sum, tx) => sum + tx.amount, 0) / wallet.transactions.length).toFixed(2)
+                : '0.00';
+            document.getElementById('avgAmount').textContent = avgAmount;
+
+            renderTransactions();
+        }
+
+        // Отображение транзакций
+        function renderTransactions() {
+            const list = document.getElementById('transactionList');
+            
+            if (wallet.transactions.length === 0) {
+                list.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-icon">📋</div>
+                        <p>Нет транзакций. Начните отправлять или получать средства!</p>
+                    </div>
+                `;
                 return;
             }
 
-            const task = {
-                id: Date.now(),
-                text: taskText,
-                completed: false
-            };
-
-            tasks.push(task);
-            saveTasks();
-            renderTasks();
-            taskInput.value = '';
-            taskInput.focus();
-        }
-
-        function deleteTask(id) {
-            tasks = tasks.filter(task => task.id !== id);
-            saveTasks();
-            renderTasks();
-        }
-
-        function toggleTask(id) {
-            tasks = tasks.map(task =>
-                task.id === id ? { ...task, completed: !task.completed } : task
-            );
-            saveTasks();
-            renderTasks();
-        }
-
-        function clearCompleted() {
-            if (tasks.some(task => task.completed)) {
-                if (confirm('Delete all completed tasks?')) {
-                    tasks = tasks.filter(task => !task.completed);
-                    saveTasks();
-                    renderTasks();
-                }
-            } else {
-                alert('No completed tasks to clear!');
-            }
-        }
-
-        function renderTasks() {
-            taskList.innerHTML = '';
-
-            if (tasks.length === 0) {
-                taskList.innerHTML = `
-                    <div class="empty-state">
-                        <div class="empty-state-icon">📝</div>
-                        <p>No tasks yet. Add one to get started!</p>
+            list.innerHTML = wallet.transactions.slice().reverse().map((tx, idx) => `
+                <div class="transaction-item">
+                    <div class="transaction-info">
+                        <div class="transaction-type">${tx.type === 'send' ? '📤 Отправлено' : '📥 Получено'}</div>
+                        <div class="transaction-date">${tx.date} • ${tx.description}</div>
                     </div>
-                `;
-            } else {
-                tasks.forEach(task => {
-                    const taskDiv = document.createElement('div');
-                    taskDiv.className = `task-item ${task.completed ? 'completed' : ''}`;
-                    taskDiv.innerHTML = `
-                        <input type="checkbox" class="checkbox" ${task.completed ? 'checked' : ''} 
-                               onchange="toggleTask(${task.id})">
-                        <span class="task-text">${escapeHtml(task.text)}</span>
-                        <button class="delete-btn" onclick="deleteTask(${task.id})">Delete</button>
-                    `;
-                    taskList.appendChild(taskDiv);
-                });
+                    <div class="transaction-amount ${tx.type}">
+                        ${tx.type === 'send' ? '-' : '+'}${tx.amount.toFixed(2)} GA
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Модальные окна
+        function openSendModal() {
+            document.getElementById('sendModal').classList.add('active');
+        }
+
+        function closeSendModal() {
+            document.getElementById('sendModal').classList.remove('active');
+            document.getElementById('sendAddress').value = '';
+            document.getElementById('sendAmount').value = '';
+            document.getElementById('sendDescription').value = '';
+        }
+
+        function openReceiveModal() {
+            document.getElementById('receiveModal').classList.add('active');
+        }
+
+        function closeReceiveModal() {
+            document.getElementById('receiveModal').classList.remove('active');
+            document.getElementById('receiveAmount').value = '';
+            document.getElementById('receiveSender').value = '';
+            document.getElementById('receiveDescription').value = '';
+        }
+
+        // Отправка средств
+        function sendFunds() {
+            const amount = parseFloat(document.getElementById('sendAmount').value);
+            const address = document.getElementById('sendAddress').value.trim();
+            const description = document.getElementById('sendDescription').value.trim();
+
+            if (!address) {
+                alert('Введите адрес получателя!');
+                return;
             }
 
-            updateStats();
+            if (!amount || amount <= 0) {
+                alert('Введите корректную сумму!');
+                return;
+            }
+
+            if (amount > wallet.balance) {
+                alert('Недостаточно средств!');
+                return;
+            }
+
+            wallet.balance -= amount;
+            wallet.transactions.push({
+                type: 'send',
+                amount: amount,
+                address: address,
+                description: description || 'Перевод',
+                date: new Date().toLocaleString('ru-RU')
+            });
+
+            saveWallet();
+            updateUI();
+            closeSendModal();
+            alert('Средства успешно отправлены! ✓');
         }
 
-        function updateStats() {
-            const total = tasks.length;
-            const completed = tasks.filter(task => task.completed).length;
-            const remaining = total - completed;
+        // Получение средств
+        function receiveFunds() {
+            const amount = parseFloat(document.getElementById('receiveAmount').value);
+            const sender = document.getElementById('receiveSender').value.trim();
+            const description = document.getElementById('receiveDescription').value.trim();
 
-            totalTasksEl.textContent = total;
-            completedTasksEl.textContent = completed;
-            remainingTasksEl.textContent = remaining;
+            if (!sender) {
+                alert('Введите адрес отправителя!');
+                return;
+            }
+
+            if (!amount || amount <= 0) {
+                alert('Введите корректную сумму!');
+                return;
+            }
+
+            wallet.balance += amount;
+            wallet.transactions.push({
+                type: 'receive',
+                amount: amount,
+                address: sender,
+                description: description || 'Получение',
+                date: new Date().toLocaleString('ru-RU')
+            });
+
+            saveWallet();
+            updateUI();
+            closeReceiveModal();
+            alert('Средства успешно получены! ✓');
         }
 
-        function saveTasks() {
-            localStorage.setItem('tasks', JSON.stringify(tasks));
-        }
+        // Закрытие модали при клике вне её
+        document.getElementById('sendModal').addEventListener('click', (e) => {
+            if (e.target.id === 'sendModal') closeSendModal();
+        });
 
-        function escapeHtml(text) {
-            const map = {
-                '&': '&amp;',
-                '<': '&lt;',
-                '>': '&gt;',
-                '"': '&quot;',
-                "'": '&#039;'
-            };
-            return text.replace(/[&<>"']/g, m => map[m]);
-        }
+        document.getElementById('receiveModal').addEventListener('click', (e) => {
+            if (e.target.id === 'receiveModal') closeReceiveModal();
+        });
+
+        // Инициализация
+        loadWallet();
+        updateUI();
     </script>
 </body>
 </html>
