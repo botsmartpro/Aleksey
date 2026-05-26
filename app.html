@@ -1,0 +1,787 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Верный Pay - Кошелек</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #000;
+            color: #fff;
+        }
+
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+            background: #111;
+            min-height: 100vh;
+            position: relative;
+            padding-bottom: 100px;
+        }
+
+        /* HEADER */
+        .header {
+            padding: 16px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #1a1a1a;
+            border-bottom: 1px solid #2a2a2a;
+        }
+
+        .header-title {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .header-btn {
+            background: none;
+            border: none;
+            color: #00d15f;
+            font-size: 20px;
+            cursor: pointer;
+        }
+
+        /* PAGE */
+        .page {
+            display: none;
+            padding: 20px;
+            animation: fadeIn 0.3s;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        /* BALANCE CARD */
+        .balance-section {
+            margin-bottom: 30px;
+        }
+
+        .balance-title {
+            font-size: 14px;
+            color: #888;
+            margin-bottom: 8px;
+        }
+
+        .balance-amount {
+            font-size: 44px;
+            font-weight: 700;
+            color: #00d15f;
+            margin-bottom: 20px;
+        }
+
+        .card {
+            background: linear-gradient(135deg, #00c853, #008f3d);
+            border-radius: 20px;
+            padding: 24px;
+            height: 200px;
+            position: relative;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            width: 200px;
+            height: 200px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 50%;
+            top: -50px;
+            right: -50px;
+        }
+
+        .card-content {
+            position: relative;
+            z-index: 1;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .card-title {
+            font-size: 20px;
+            font-weight: 700;
+        }
+
+        .card-number {
+            font-size: 20px;
+            letter-spacing: 2px;
+        }
+
+        .card-user {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        /* BUTTONS */
+        .action-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 30px;
+        }
+
+        .btn {
+            background: #1d1d1d;
+            border: none;
+            color: #fff;
+            padding: 16px;
+            border-radius: 16px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .btn:active {
+            background: #2a2a2a;
+            transform: scale(0.98);
+        }
+
+        .btn-primary {
+            background: #00c853;
+            color: #000;
+            grid-column: 1 / -1;
+        }
+
+        .btn-primary:active {
+            background: #00a844;
+        }
+
+        /* SECTION TITLE */
+        .section-title {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 16px;
+            margin-top: 20px;
+        }
+
+        /* LIST ITEMS */
+        .item {
+            background: #1a1a1a;
+            border-radius: 16px;
+            padding: 16px;
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .item:active {
+            background: #242424;
+        }
+
+        .item-left {
+            flex: 1;
+        }
+
+        .item-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .item-subtitle {
+            font-size: 13px;
+            color: #888;
+        }
+
+        .item-price {
+            font-size: 16px;
+            font-weight: 700;
+            color: #00d15f;
+        }
+
+        .item-price.negative {
+            color: #ff6b6b;
+        }
+
+        /* SEARCH */
+        .search-box {
+            background: #1a1a1a;
+            border: 1px solid #2a2a2a;
+            border-radius: 16px;
+            padding: 12px 16px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .search-box input {
+            background: none;
+            border: none;
+            color: #fff;
+            flex: 1;
+            font-size: 16px;
+        }
+
+        .search-box input::placeholder {
+            color: #666;
+        }
+
+        /* MODAL */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: #1a1a1a;
+            border-radius: 24px;
+            padding: 24px;
+            width: 90%;
+            max-width: 400px;
+            text-align: center;
+        }
+
+        .modal-title {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 24px;
+        }
+
+        .modal-input {
+            background: #111;
+            border: 1px solid #2a2a2a;
+            border-radius: 12px;
+            padding: 14px;
+            color: #fff;
+            width: 100%;
+            margin-bottom: 16px;
+            font-size: 16px;
+        }
+
+        .modal-input::placeholder {
+            color: #666;
+        }
+
+        .modal-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .modal-btn {
+            background: #00c853;
+            border: none;
+            color: #000;
+            padding: 14px;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .modal-btn.cancel {
+            background: #2a2a2a;
+            color: #fff;
+        }
+
+        /* BOTTOM NAV */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            max-width: 500px;
+            margin: 0 auto;
+            height: 80px;
+            background: #1a1a1a;
+            border-top: 1px solid #2a2a2a;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+        }
+
+        .nav-item {
+            background: none;
+            border: none;
+            color: #666;
+            font-size: 24px;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            transition: color 0.2s;
+        }
+
+        .nav-item.active {
+            color: #00d15f;
+        }
+
+        .nav-label {
+            font-size: 11px;
+        }
+
+        /* USER PROFILE */
+        .profile-card {
+            background: #1a1a1a;
+            border-radius: 20px;
+            padding: 24px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .profile-avatar {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #00c853, #008f3d);
+            border-radius: 50%;
+            margin: 0 auto 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+        }
+
+        .profile-name {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .profile-id {
+            font-size: 13px;
+            color: #888;
+            margin-bottom: 16px;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 12px;
+            margin-top: 20px;
+        }
+
+        .stat-item {
+            background: #111;
+            border-radius: 12px;
+            padding: 12px;
+        }
+
+        .stat-value {
+            font-size: 20px;
+            font-weight: 700;
+            color: #00d15f;
+        }
+
+        .stat-label {
+            font-size: 11px;
+            color: #888;
+            margin-top: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- HEADER -->
+        <div class="header">
+            <div class="header-title" id="headerTitle">Главная</div>
+            <button class="header-btn" onclick="toggleSettings()">⚙️</button>
+        </div>
+
+        <!-- HOME PAGE -->
+        <div class="page active" id="homePage">
+            <div class="balance-section">
+                <div class="balance-title">Ваш баланс</div>
+                <div class="balance-amount" id="balanceDisplay">₽ 24 580</div>
+            </div>
+
+            <div class="card">
+                <div class="card-content">
+                    <div class="card-title">ВЕРНЫЙ PAY</div>
+                    <div class="card-number">2200 •••• •••• 4581</div>
+                    <div class="card-user">ALEKSEY</div>
+                </div>
+            </div>
+
+            <div class="action-buttons">
+                <button class="btn" onclick="openTransferModal()">📤 Отправить</button>
+                <button class="btn" onclick="openReceiveModal()">📥 Получить</button>
+                <button class="btn btn-primary" onclick="goToPage('shop')">🛍️ Магазин</button>
+            </div>
+
+            <div class="section-title">История транзакций</div>
+            <div id="historyList"></div>
+        </div>
+
+        <!-- SHOP PAGE -->
+        <div class="page" id="shopPage">
+            <div class="search-box">
+                <span>🔍</span>
+                <input type="text" id="shopSearch" placeholder="Поиск товаров...">
+            </div>
+
+            <div class="section-title">Популярные товары</div>
+            <div id="productsList"></div>
+        </div>
+
+        <!-- BALANCE PAGE -->
+        <div class="page" id="balancePage">
+            <div class="section-title">Пополнение счета</div>
+            
+            <div class="item" onclick="openTopUpModal('500')">
+                <div class="item-left">
+                    <div class="item-title">💳 Быстро</div>
+                    <div class="item-subtitle">Пополнить 500 ₽</div>
+                </div>
+                <span>→</span>
+            </div>
+
+            <div class="item" onclick="openTopUpModal('1000')">
+                <div class="item-left">
+                    <div class="item-title">💳 Стандарт</div>
+                    <div class="item-subtitle">Пополнить 1000 ₽</div>
+                </div>
+                <span>→</span>
+            </div>
+
+            <div class="item" onclick="openTopUpModal('5000')">
+                <div class="item-left">
+                    <div class="item-title">💳 Премиум</div>
+                    <div class="item-subtitle">Пополнить 5000 ₽</div>
+                </div>
+                <span>→</span>
+            </div>
+
+            <div class="section-title">История пополнений</div>
+            <div id="topUpHistory"></div>
+        </div>
+
+        <!-- PROFILE PAGE -->
+        <div class="page" id="profilePage">
+            <div class="profile-card">
+                <div class="profile-avatar">👤</div>
+                <div class="profile-name">Aleksey</div>
+                <div class="profile-id">ID: VER-12345678</div>
+                <button class="btn" onclick="openEditProfileModal()">✏️ Редактировать</button>
+            </div>
+
+            <div class="stats">
+                <div class="stat-item">
+                    <div class="stat-value" id="totalTransactions">0</div>
+                    <div class="stat-label">Операций</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="totalSpent">0 ₽</div>
+                    <div class="stat-label">Потрачено</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="totalCashback">0 ₽</div>
+                    <div class="stat-label">Кэшбэк</div>
+                </div>
+            </div>
+
+            <div class="section-title">Номер карты</div>
+            <div class="item">
+                <div class="item-left">
+                    <div class="item-title">💳 ВЕРНЫЙ PAY</div>
+                    <div class="item-subtitle">2200 •••• •••• 4581</div>
+                </div>
+                <span>✓</span>
+            </div>
+
+            <div class="section-title">Параметры</div>
+            <div class="item" onclick="alert('Безопасность: двухфакторная аутентификация включена')">
+                <div class="item-left">
+                    <div class="item-title">🔒 Безопасность</div>
+                    <div class="item-subtitle">Управление доступом</div>
+                </div>
+                <span>→</span>
+            </div>
+
+            <div class="item" onclick="alert('Уведомления: все виды активированы')">
+                <div class="item-left">
+                    <div class="item-title">🔔 Уведомления</div>
+                    <div class="item-subtitle">Настройки оповещений</div>
+                </div>
+                <span>→</span>
+            </div>
+
+            <div class="item" onclick="logOut()">
+                <div class="item-left">
+                    <div class="item-title" style="color: #ff6b6b;">🚪 Выход</div>
+                    <div class="item-subtitle">Выйти из аккаунта</div>
+                </div>
+                <span>→</span>
+            </div>
+        </div>
+
+        <!-- BOTTOM NAVIGATION -->
+        <div class="bottom-nav">
+            <button class="nav-item active" onclick="goToPage('home')">
+                <span>🏠</span>
+                <span class="nav-label">Главная</span>
+            </button>
+            <button class="nav-item" onclick="goToPage('shop')">
+                <span>🛍️</span>
+                <span class="nav-label">Магазин</span>
+            </button>
+            <button class="nav-item" onclick="goToPage('balance')">
+                <span>💳</span>
+                <span class="nav-label">Счет</span>
+            </button>
+            <button class="nav-item" onclick="goToPage('profile')">
+                <span>👤</span>
+                <span class="nav-label">Профиль</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- MODALS -->
+    <div class="modal" id="transferModal">
+        <div class="modal-content">
+            <div class="modal-title">Отправить деньги</div>
+            <input class="modal-input" id="transferUser" placeholder="ID получателя">
+            <input class="modal-input" id="transferAmount" type="number" placeholder="Сумма (₽)">
+            <div class="modal-buttons">
+                <button class="modal-btn cancel" onclick="closeModal('transferModal')">Отмена</button>
+                <button class="modal-btn" onclick="sendTransfer()">Отправить</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="receiveModal">
+        <div class="modal-content">
+            <div class="modal-title">Ссылка оплаты</div>
+            <input class="modal-input" id="receiveAmount" type="number" placeholder="Сумма (₽)">
+            <div style="background: #111; border-radius: 12px; padding: 16px; margin-bottom: 16px; word-break: break-all;">
+                <div style="font-size: 12px; color: #888; margin-bottom: 8px;">Поделитесь ссылкой:</div>
+                <div id="paymentLink" style="font-size: 12px;">...</div>
+            </div>
+            <div class="modal-buttons">
+                <button class="modal-btn cancel" onclick="closeModal('receiveModal')">Закрыть</button>
+                <button class="modal-btn" onclick="generatePaymentLink()">Создать</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="topUpModal">
+        <div class="modal-content">
+            <div class="modal-title" id="topUpTitle">Пополнение</div>
+            <div style="font-size: 32px; margin-bottom: 20px;" id="topUpAmount">500 ₽</div>
+            <div class="modal-buttons">
+                <button class="modal-btn cancel" onclick="closeModal('topUpModal')">Отмена</button>
+                <button class="modal-btn" onclick="confirmTopUp()">Подтвердить</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="editProfileModal">
+        <div class="modal-content">
+            <div class="modal-title">Редактировать профиль</div>
+            <input class="modal-input" id="profileName" placeholder="Имя" value="Aleksey">
+            <input class="modal-input" id="profileEmail" placeholder="Email" value="aleksey@example.com">
+            <div class="modal-buttons">
+                <button class="modal-btn cancel" onclick="closeModal('editProfileModal')">Отмена</button>
+                <button class="modal-btn" onclick="saveProfile()">Сохранить</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let appData = {
+            balance: 24580,
+            transactions: [
+                { type: 'send', name: 'Верный', date: 'Сегодня 18:42', amount: -1240 },
+                { type: 'receive', name: 'Кэшбэк', date: 'Сегодня 16:12', amount: 125 },
+                { type: 'receive', name: 'Пополнение', date: 'Вчера 11:08', amount: 5000 }
+            ],
+            products: [
+                { id: 1, name: 'iPhone 15', price: 50000, emoji: '📱' },
+                { id: 2, name: 'MacBook Pro', price: 150000, emoji: '💻' },
+                { id: 3, name: 'AirPods Pro', price: 25000, emoji: '🎧' },
+                { id: 4, name: 'Apple Watch', price: 35000, emoji: '⌚' },
+                { id: 5, name: 'iPad Air', price: 60000, emoji: '📱' },
+                { id: 6, name: 'Magic Mouse', price: 8000, emoji: '🖱️' }
+            ],
+            topUpHistory: []
+        };
+
+        let currentPage = 'home';
+
+        function goToPage(page) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.getElementById(page + 'Page').classList.add('active');
+            
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            event.target.closest('.nav-item').classList.add('active');
+            
+            const titles = {
+                home: 'Главная',
+                shop: 'Магазин',
+                balance: 'Счет',
+                profile: 'Профиль'
+            };
+            document.getElementById('headerTitle').textContent = titles[page];
+            currentPage = page;
+
+            if (page === 'home') renderHistory();
+            if (page === 'shop') renderProducts();
+            if (page === 'profile') updateStats();
+        }
+
+        function renderHistory() {
+            const list = document.getElementById('historyList');
+            list.innerHTML = appData.transactions.map(t => `
+                <div class="item">
+                    <div class="item-left">
+                        <div class="item-title">${t.name}</div>
+                        <div class="item-subtitle">${t.date}</div>
+                    </div>
+                    <div class="item-price ${t.amount < 0 ? 'negative' : ''}">${t.amount > 0 ? '+' : ''}${Math.abs(t.amount)} ₽</div>
+                </div>
+            `).join('');
+        }
+
+        function renderProducts() {
+            const list = document.getElementById('productsList');
+            list.innerHTML = appData.products.map(p => `
+                <div class="item" onclick="openProductModal(${p.id}, '${p.name}', ${p.price})">
+                    <div class="item-left">
+                        <div class="item-title">${p.emoji} ${p.name}</div>
+                        <div class="item-subtitle">В наличии</div>
+                    </div>
+                    <div class="item-price">${p.price} ₽</div>
+                </div>
+            `).join('');
+        }
+
+        function updateStats() {
+            document.getElementById('totalTransactions').textContent = appData.transactions.length;
+            const totalSpent = appData.transactions.filter(t => t.amount < 0).reduce((sum, t) => sum + Math.abs(t.amount), 0);
+            document.getElementById('totalSpent').textContent = totalSpent + ' ₽';
+            const totalCashback = appData.transactions.filter(t => t.name === 'Кэшбэк').reduce((sum, t) => sum + t.amount, 0);
+            document.getElementById('totalCashback').textContent = totalCashback + ' ₽';
+        }
+
+        function openTransferModal() {
+            document.getElementById('transferModal').classList.add('active');
+        }
+
+        function openReceiveModal() {
+            document.getElementById('receiveModal').classList.add('active');
+        }
+
+        function openTopUpModal(amount) {
+            document.getElementById('topUpAmount').textContent = amount + ' ₽';
+            document.getElementById('topUpModal').setAttribute('data-amount', amount);
+            document.getElementById('topUpModal').classList.add('active');
+        }
+
+        function openEditProfileModal() {
+            document.getElementById('editProfileModal').classList.add('active');
+        }
+
+        function openProductModal(id, name, price) {
+            alert(`${name}\n\nЦена: ${price} ₽\n\nДобавлено в корзину!`);
+        }
+
+        function closeModal(id) {
+            document.getElementById(id).classList.remove('active');
+        }
+
+        function sendTransfer() {
+            const user = document.getElementById('transferUser').value;
+            const amount = parseFloat(document.getElementById('transferAmount').value);
+            
+            if (!user || !amount || amount <= 0) {
+                alert('Заполните все поля');
+                return;
+            }
+
+            if (amount > appData.balance) {
+                alert('Недостаточно средств');
+                return;
+            }
+
+            appData.balance -= amount;
+            appData.transactions.unshift({ 
+                type: 'send', 
+                name: 'Пользователю ' + user, 
+                date: new Date().toLocaleTimeString('ru-RU', {hour: '2-digit', minute: '2-digit'}), 
+                amount: -amount 
+            });
+
+            document.getElementById('balanceDisplay').textContent = '₽ ' + appData.balance;
+            closeModal('transferModal');
+            alert('Деньги отправлены!');
+            renderHistory();
+        }
+
+        function generatePaymentLink() {
+            const amount = document.getElementById('receiveAmount').value;
+            if (!amount || amount <= 0) {
+                alert('Введите сумму');
+                return;
+            }
+            document.getElementById('paymentLink').textContent = `https://verpay.ru/pay/${Math.random().toString(36).substr(2, 9)}?amount=${amount}`;
+        }
+
+        function confirmTopUp() {
+            const amount = parseFloat(document.getElementById('topUpModal').getAttribute('data-amount'));
+            appData.balance += amount;
+            appData.transactions.unshift({
+                type: 'receive',
+                name: 'Пополнение',
+                date: new Date().toLocaleTimeString('ru-RU', {hour: '2-digit', minute: '2-digit'}),
+                amount: amount
+            });
+            appData.topUpHistory.push({ amount, date: new Date().toLocaleDateString('ru-RU') });
+
+            document.getElementById('balanceDisplay').textContent = '₽ ' + appData.balance;
+            closeModal('topUpModal');
+            alert('Счет пополнен на ' + amount + ' ₽');
+            renderHistory();
+        }
+
+        function saveProfile() {
+            const name = document.getElementById('profileName').value;
+            alert('Профиль обновлен!');
+            closeModal('editProfileModal');
+        }
+
+        function toggleSettings() {
+            alert('Настройки приложения');
+        }
+
+        function logOut() {
+            if (confirm('Вы уверены?')) {
+                alert('До свидания!');
+            }
+        }
+
+        renderHistory();
+    </script>
+</body>
+</html>
