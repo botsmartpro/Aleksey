@@ -49,6 +49,11 @@
             cursor: pointer;
         }
 
+        .back-btn {
+            font-size: 20px;
+            cursor: pointer;
+        }
+
         /* PAGE */
         .page {
             display: none;
@@ -211,6 +216,37 @@
 
         .item-price.negative {
             color: #ff6b6b;
+        }
+
+        /* TOGGLE SWITCH */
+        .toggle-switch {
+            width: 50px;
+            height: 28px;
+            background: #333;
+            border-radius: 14px;
+            position: relative;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .toggle-switch.active {
+            background: #00c853;
+        }
+
+        .toggle-switch::after {
+            content: '';
+            position: absolute;
+            width: 24px;
+            height: 24px;
+            background: #fff;
+            border-radius: 50%;
+            top: 2px;
+            left: 2px;
+            transition: 0.3s;
+        }
+
+        .toggle-switch.active::after {
+            left: 24px;
         }
 
         /* SEARCH */
@@ -400,6 +436,72 @@
             color: #888;
             margin-top: 4px;
         }
+
+        /* SETTINGS */
+        .settings-group {
+            margin-bottom: 24px;
+        }
+
+        .settings-group-title {
+            font-size: 13px;
+            color: #888;
+            text-transform: uppercase;
+            margin-bottom: 12px;
+            padding: 0 16px;
+            letter-spacing: 0.5px;
+        }
+
+        .settings-item {
+            background: #1a1a1a;
+            padding: 16px;
+            margin-bottom: 1px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .settings-item:first-of-type {
+            border-radius: 16px 16px 0 0;
+        }
+
+        .settings-item:last-of-type {
+            border-radius: 0 0 16px 16px;
+            margin-bottom: 12px;
+        }
+
+        .settings-item-text {
+            flex: 1;
+        }
+
+        .settings-item-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .settings-item-description {
+            font-size: 13px;
+            color: #888;
+        }
+
+        .danger-zone {
+            background: rgba(255, 107, 107, 0.1);
+            border: 1px solid rgba(255, 107, 107, 0.3);
+            border-radius: 16px;
+            padding: 16px;
+            margin-top: 30px;
+        }
+
+        .danger-btn {
+            background: #ff6b6b;
+            color: white;
+            border: none;
+            padding: 14px;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+        }
     </style>
 </head>
 <body>
@@ -407,7 +509,7 @@
         <!-- HEADER -->
         <div class="header">
             <div class="header-title" id="headerTitle">Главная</div>
-            <button class="header-btn" onclick="toggleSettings()">⚙️</button>
+            <button class="header-btn" onclick="goToSettings()">⚙️</button>
         </div>
 
         <!-- HOME PAGE -->
@@ -537,6 +639,190 @@
             </div>
         </div>
 
+        <!-- SETTINGS PAGE -->
+        <div class="page" id="settingsPage">
+            <!-- ACCOUNT SECTION -->
+            <div class="settings-group">
+                <div class="settings-group-title">Аккаунт</div>
+                
+                <div class="settings-item" onclick="openEditProfileModal()">
+                    <div class="settings-item-text">
+                        <div class="settings-item-title">Профиль</div>
+                        <div class="settings-item-description">Редактировать данные профиля</div>
+                    </div>
+                    <span>→</span>
+                </div>
+
+                <div class="settings-item" onclick="alert('Смена пароля активирована')">
+                    <div class="settings-item-text">
+                        <div class="settings-item-title">Пароль</div>
+                        <div class="settings-item-description">Изменить пароль аккаунта</div>
+                    </div>
+                    <span>→</span>
+                </div>
+
+                <div class="settings-item" onclick="alert('Привязанные устройства: 1')">
+                    <div class="settings-item-text">
+                        <div class="settings-item-title">Устройства</div>
+                        <div class="settings-item-description">Управление связанными устройствами</div>
+                    </div>
+                    <span>→</span>
+                </div>
+            </div>
+
+            <!-- SECURITY SECTION -->
+            <div class="settings-group">
+                <div class="settings-group-title">Безопасность</div>
+                
+                <div class="settings-item" onclick="toggleSetting('2fa')">
+                    <div class="settings-item-text">
+                        <div class="settings-item-title">Двухфакторная аутентификация</div>
+                        <div class="settings-item-description">Дополнительная защита аккаунта</div>
+                    </div>
+                    <div class="toggle-switch active" id="2fa"></div>
+                </div>
+
+                <div class="settings-item" onclick="toggleSetting('biometric')">
+                    <div class="settings-item-text">
+                        <div class="settings-item-title">Биометрическая аутентификация</div>
+                        <div class="settings-item-description">Отпечаток пальца / Face ID</div>
+                    </div>
+                    <div class="toggle-switch" id="biometric"></div>
+                </div>
+
+                <div class="settings-item" onclick="alert('Сессии: 1 активная')">
+                    <div class="settings-item-text">
+                        <div class="settings-item-title">Активные сессии</div>
+                        <div class="settings-item-description">Управление входами в аккаунт</div>
+                    </div>
+                    <span>→</span>
+                </div>
+            </div>
+
+            <!-- NOTIFICATIONS SECTION -->
+            <div class="settings-group">
+                <div class="settings-group-title">Уведомления</div>
+                
+                <div class="settings-item" onclick="toggleSetting('pushNotif')">
+                    <div class="settings-item-text">
+                        <div class="settings-item-title">Push-уведомления</div>
+                        <div class="settings-item-description">Получать уведомления на телефон</div>
+                    </div>
+                    <div class="toggle-switch active" id="pushNotif"></div>
+                </div>
+
+                <div class="settings-item" onclick="toggleSetting('emailNotif')">
+                    <div class="settings-item-text">
+                        <div class="settings-item-title">Email-уведомления</div>
+                        <div class="settings-item-description">Уведомления по электронной почте</div>
+                    </div>
+                    <div class="toggle-switch active" id="emailNotif"></div>
+                </div>
+
+                <div class="settings-item" onclick="toggleSetting('smsNotif')">
+                    <div class="settings-item-text">
+                        <div class="settings-item-title">SMS-уведомления</div>
+                        <div class="settings-item-description">Уведомления по SMS</div>
+                    </div>
+                    <div class="toggle-switch" id="smsNotif"></div>
+                </div>
+            </div>
+
+            <!-- PRIVACY SECTION -->
+            <div class="settings-group">
+                <div class="settings-group-title">Конфиденциальность</div>
+                
+                <div class="settings-item" onclick="toggleSetting('privacyProfile')">
+                    <div class="settings-item-text">
+                        <div class="settings-item-title">Приватный профиль</div>
+                        <div class="settings-item-description">Скрыть профиль от других пользователей</div>
+                    </div>
+                    <div class="toggle-switch" id="privacyProfile"></div>
+                </div>
+
+                <div class="settings-item" onclick="toggleSetting('showBalance')">
+                    <div class="settings-item-text">
+                        <div class="settings-item-title">Показывать баланс</div>
+                        <div class="settings-item-description">Отображать баланс в профиле</div>
+                    </div>
+                    <div class="toggle-switch active" id="showBalance"></div>
+                </div>
+
+                <div class="settings-item" onclick="alert('Данные и конфиденциальность')">
+                    <div class="settings-item-text">
+                        <div class="settings-item-title">Данные</div>
+                        <div class="settings-item-description">Скачать или удалить данные</div>
+                    </div>
+                    <span>→</span>
+                </div>
+            </div>
+
+            <!-- APP SECTION -->
+            <div class="settings-group">
+                <div class="settings-group-title">Приложение</div>
+                
+                <div class="settings-item" onclick="toggleSetting('darkMode')">
+                    <div class="settings-item-text">
+                        <div class="settings-item-title">Темный режим</div>
+                        <div class="settings-item-description">Автоматический темный режим</div>
+                    </div>
+                    <div class="toggle-switch active" id="darkMode"></div>
+                </div>
+
+                <div class="settings-item" onclick="alert('Язык: Русский')">
+                    <div class="settings-item-text">
+                        <div class="settings-item-title">Язык</div>
+                        <div class="settings-item-description">Русский</div>
+                    </div>
+                    <span>→</span>
+                </div>
+
+                <div class="settings-item" onclick="alert('Версия: 1.2.0')">
+                    <div class="settings-item-text">
+                        <div class="settings-item-title">О приложении</div>
+                        <div class="settings-item-description">Версия 1.2.0</div>
+                    </div>
+                    <span>→</span>
+                </div>
+            </div>
+
+            <!-- SUPPORT SECTION -->
+            <div class="settings-group">
+                <div class="settings-group-title">Поддержка</div>
+                
+                <div class="settings-item" onclick="alert('support@verpay.ru')">
+                    <div class="settings-item-text">
+                        <div class="settings-item-title">Служба поддержки</div>
+                        <div class="settings-item-description">Свяжитесь с нами</div>
+                    </div>
+                    <span>→</span>
+                </div>
+
+                <div class="settings-item" onclick="alert('Политика конфиденциальности')">
+                    <div class="settings-item-text">
+                        <div class="settings-item-title">Политика</div>
+                        <div class="settings-item-description">Условия использования</div>
+                    </div>
+                    <span>→</span>
+                </div>
+
+                <div class="settings-item" onclick="alert('Отправлена ваша обратная связь')">
+                    <div class="settings-item-text">
+                        <div class="settings-item-title">Обратная связь</div>
+                        <div class="settings-item-description">Отправить отзыв разработчикам</div>
+                    </div>
+                    <span>→</span>
+                </div>
+            </div>
+
+            <!-- DANGER ZONE -->
+            <div class="danger-zone">
+                <div class="settings-item-title" style="color: #ff6b6b; margin-bottom: 12px;">Опасная зона</div>
+                <button class="danger-btn" onclick="clearData()">🗑️ Очистить все данные</button>
+                <button class="danger-btn" style="margin-top: 8px; background: #ff3333;" onclick="deleteAccount()">❌ Удалить аккаунт</button>
+            </div>
+        </div>
+
         <!-- BOTTOM NAVIGATION -->
         <div class="bottom-nav">
             <button class="nav-item active" onclick="goToPage('home')">
@@ -625,7 +911,17 @@
                 { id: 5, name: 'iPad Air', price: 60000, emoji: '📱' },
                 { id: 6, name: 'Magic Mouse', price: 8000, emoji: '🖱️' }
             ],
-            topUpHistory: []
+            topUpHistory: [],
+            settings: {
+                '2fa': true,
+                'biometric': false,
+                'pushNotif': true,
+                'emailNotif': true,
+                'smsNotif': false,
+                'privacyProfile': false,
+                'showBalance': true,
+                'darkMode': true
+            }
         };
 
         let currentPage = 'home';
@@ -641,7 +937,8 @@
                 home: 'Главная',
                 shop: 'Магазин',
                 balance: 'Счет',
-                profile: 'Профиль'
+                profile: 'Профиль',
+                settings: 'Настройки'
             };
             document.getElementById('headerTitle').textContent = titles[page];
             currentPage = page;
@@ -649,6 +946,19 @@
             if (page === 'home') renderHistory();
             if (page === 'shop') renderProducts();
             if (page === 'profile') updateStats();
+        }
+
+        function goToSettings() {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.getElementById('settingsPage').classList.add('active');
+            document.getElementById('headerTitle').textContent = 'Настройки';
+            currentPage = 'settings';
+        }
+
+        function toggleSetting(settingId) {
+            const element = document.getElementById(settingId);
+            appData.settings[settingId] = !appData.settings[settingId];
+            element.classList.toggle('active');
         }
 
         function renderHistory() {
@@ -771,8 +1081,18 @@
             closeModal('editProfileModal');
         }
 
-        function toggleSettings() {
-            alert('Настройки приложения');
+        function clearData() {
+            if (confirm('Вы уверены? Это действие нельзя отменить!')) {
+                appData.transactions = [];
+                appData.topUpHistory = [];
+                alert('Данные очищены');
+            }
+        }
+
+        function deleteAccount() {
+            if (confirm('Удалить аккаунт? Это действие необратимо!')) {
+                alert('Аккаунт удален. До свидания!');
+            }
         }
 
         function logOut() {
