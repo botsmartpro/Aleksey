@@ -1,254 +1,905 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ТНС Энерго - Личный кабинет</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-<title>ТНС Энерго</title>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #f5f5f5;
+            color: #333;
+        }
 
-<style>
-*{
-    margin:0;
-    padding:0;
-    box-sizing:border-box;
-    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
-}
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+            background: #fff;
+            min-height: 100vh;
+            position: relative;
+            padding-bottom: 100px;
+        }
 
-body{
-    background:#f4f6f9;
-    padding:20px;
-    color:#111827;
-}
+        /* HEADER */
+        .header {
+            background: linear-gradient(135deg, #004a94 0%, #003d7a 100%);
+            color: white;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
 
-.header{
-    font-size:30px;
-    font-weight:700;
-    margin-bottom:24px;
-}
+        .header-logo {
+            font-size: 20px;
+            font-weight: 700;
+        }
 
-.card{
-    background:white;
-    border-radius:24px;
-    padding:20px;
-    margin-bottom:18px;
-    box-shadow:0 4px 18px rgba(0,0,0,0.06);
-}
+        .header-btn {
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            font-size: 18px;
+            cursor: pointer;
+            padding: 8px 12px;
+            border-radius: 8px;
+            transition: 0.2s;
+        }
 
-.card h2{
-    font-size:22px;
-    margin-bottom:16px;
-}
+        .header-btn:active {
+            background: rgba(255,255,255,0.3);
+        }
 
-.input{
-    width:100%;
-    padding:16px;
-    border:none;
-    border-radius:16px;
-    background:#f3f4f6;
-    font-size:16px;
-    outline:none;
-}
+        /* PAGE */
+        .page {
+            display: none;
+            padding: 20px;
+            animation: fadeIn 0.3s;
+        }
 
-.button{
-    width:100%;
-    padding:16px;
-    margin-top:14px;
-    border:none;
-    border-radius:16px;
-    background:#111827;
-    color:white;
-    font-size:16px;
-    font-weight:600;
-    cursor:pointer;
-}
+        .page.active {
+            display: block;
+        }
 
-.button:active{
-    transform:scale(0.98);
-}
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
 
-.saved{
-    margin-top:14px;
-    color:#16a34a;
-    font-size:15px;
-}
+        /* ACCOUNT INFO */
+        .account-card {
+            background: linear-gradient(135deg, #004a94 0%, #003d7a 100%);
+            color: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
 
-.notifications{
-    display:flex;
-    flex-direction:column;
-    gap:12px;
-}
+        .account-number {
+            font-size: 13px;
+            opacity: 0.9;
+            margin-bottom: 8px;
+        }
 
-.notification{
-    background:#f3f4f6;
-    border-radius:18px;
-    padding:16px;
-}
+        .account-address {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
 
-.notification-title{
-    font-size:15px;
-    font-weight:600;
-}
+        .account-status {
+            font-size: 12px;
+            background: rgba(255,255,255,0.2);
+            padding: 6px 12px;
+            border-radius: 12px;
+            display: inline-block;
+        }
 
-.notification-date{
-    margin-top:6px;
-    font-size:12px;
-    color:#6b7280;
-}
+        /* DEBT SECTION */
+        .debt-section {
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 20px;
+        }
 
-.balance{
-    font-size:34px;
-    font-weight:700;
-    margin-top:10px;
-}
+        .debt-title {
+            font-size: 14px;
+            color: #856404;
+            margin-bottom: 8px;
+        }
 
-.bottom-nav{
-    position:fixed;
-    bottom:0;
-    left:0;
-    width:100%;
-    background:white;
-    display:flex;
-    justify-content:space-around;
-    padding:14px 0;
-    box-shadow:0 -2px 14px rgba(0,0,0,0.08);
-}
+        .debt-amount {
+            font-size: 32px;
+            font-weight: 700;
+            color: #ff6b6b;
+        }
 
-.nav-item{
-    font-size:14px;
-    color:#6b7280;
-}
+        .debt-note {
+            font-size: 12px;
+            color: #856404;
+            margin-top: 8px;
+        }
 
-.active{
-    color:#111827;
-    font-weight:600;
-}
+        /* NO DEBT */
+        .no-debt {
+            background: #d4edda;
+            border: 1px solid #28a745;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
 
-.spacer{
-    height:90px;
-}
-</style>
+        .no-debt-check {
+            font-size: 40px;
+            margin-bottom: 8px;
+        }
+
+        .no-debt-text {
+            color: #155724;
+            font-weight: 600;
+        }
+
+        /* METERS */
+        .meter-card {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 12px;
+        }
+
+        .meter-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .meter-name {
+            font-size: 14px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .meter-status {
+            font-size: 11px;
+            background: #d1ecf1;
+            color: #0c5460;
+            padding: 4px 8px;
+            border-radius: 6px;
+        }
+
+        .meter-reading {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            margin-bottom: 12px;
+        }
+
+        .reading-value {
+            font-size: 28px;
+            font-weight: 700;
+            color: #004a94;
+        }
+
+        .reading-unit {
+            font-size: 13px;
+            color: #666;
+        }
+
+        .meter-info {
+            font-size: 12px;
+            color: #666;
+            padding-top: 12px;
+            border-top: 1px solid #dee2e6;
+        }
+
+        .meter-info-item {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 6px;
+        }
+
+        /* BILLS */
+        .bill-item {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 12px;
+            border-left: 4px solid #004a94;
+        }
+
+        .bill-period {
+            font-size: 14px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        .bill-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 13px;
+            margin-bottom: 4px;
+        }
+
+        .bill-label {
+            color: #666;
+        }
+
+        .bill-value {
+            font-weight: 600;
+            color: #333;
+        }
+
+        .bill-total {
+            border-top: 1px solid #dee2e6;
+            margin-top: 12px;
+            padding-top: 12px;
+            display: flex;
+            justify-content: space-between;
+            font-weight: 700;
+            color: #004a94;
+        }
+
+        .bill-status {
+            font-size: 12px;
+            margin-top: 12px;
+            padding: 8px;
+            border-radius: 6px;
+            text-align: center;
+        }
+
+        .bill-status.paid {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .bill-status.unpaid {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        /* SERVICES */
+        .service-list {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .service-card {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 16px;
+            text-align: center;
+            cursor: pointer;
+            transition: 0.2s;
+            border: 1px solid #dee2e6;
+        }
+
+        .service-card:active {
+            background: #e9ecef;
+            transform: scale(0.98);
+        }
+
+        .service-icon {
+            font-size: 32px;
+            margin-bottom: 8px;
+        }
+
+        .service-name {
+            font-size: 12px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        /* BUTTONS */
+        .btn {
+            background: #004a94;
+            color: white;
+            border: none;
+            padding: 14px;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            transition: 0.2s;
+            margin-bottom: 12px;
+        }
+
+        .btn:active {
+            background: #003d7a;
+            transform: scale(0.98);
+        }
+
+        .btn-secondary {
+            background: #f8f9fa;
+            color: #004a94;
+            border: 1px solid #004a94;
+        }
+
+        .btn-secondary:active {
+            background: #e9ecef;
+        }
+
+        /* SECTION TITLE */
+        .section-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 16px;
+            margin-top: 20px;
+        }
+
+        /* SETTINGS */
+        .settings-item {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border: 1px solid #dee2e6;
+        }
+
+        .settings-item-text {
+            flex: 1;
+        }
+
+        .settings-item-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 4px;
+        }
+
+        .settings-item-description {
+            font-size: 12px;
+            color: #666;
+        }
+
+        .toggle-switch {
+            width: 50px;
+            height: 28px;
+            background: #ccc;
+            border-radius: 14px;
+            position: relative;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .toggle-switch.active {
+            background: #28a745;
+        }
+
+        .toggle-switch::after {
+            content: '';
+            position: absolute;
+            width: 24px;
+            height: 24px;
+            background: #fff;
+            border-radius: 50%;
+            top: 2px;
+            left: 2px;
+            transition: 0.3s;
+        }
+
+        .toggle-switch.active::after {
+            left: 24px;
+        }
+
+        /* BOTTOM NAV */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            max-width: 500px;
+            margin: 0 auto;
+            height: 80px;
+            background: white;
+            border-top: 1px solid #dee2e6;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+        }
+
+        .nav-item {
+            background: none;
+            border: none;
+            color: #999;
+            font-size: 24px;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            transition: color 0.2s;
+        }
+
+        .nav-item.active {
+            color: #004a94;
+        }
+
+        .nav-label {
+            font-size: 11px;
+        }
+
+        /* MODAL */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            width: 90%;
+            max-width: 400px;
+        }
+
+        .modal-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        .modal-input {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 12px;
+            color: #333;
+            width: 100%;
+            margin-bottom: 16px;
+            font-size: 14px;
+        }
+
+        .modal-input::placeholder {
+            color: #999;
+        }
+
+        .modal-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .modal-btn {
+            background: #004a94;
+            border: none;
+            color: white;
+            padding: 12px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .modal-btn.cancel {
+            background: #f8f9fa;
+            color: #333;
+            border: 1px solid #dee2e6;
+        }
+
+        /* INFO BOX */
+        .info-box {
+            background: #d1ecf1;
+            border: 1px solid #bee5eb;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 16px;
+            font-size: 13px;
+            color: #0c5460;
+        }
+
+        /* PAYMENT HISTORY */
+        .payment-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .payment-item:last-child {
+            border-bottom: none;
+        }
+
+        .payment-date {
+            font-size: 12px;
+            color: #666;
+        }
+
+        .payment-amount {
+            font-weight: 700;
+            color: #28a745;
+            font-size: 14px;
+        }
+    </style>
 </head>
-
 <body>
+    <div class="container">
+        <!-- HEADER -->
+        <div class="header">
+            <div class="header-logo">⚡ ТНС Энерго</div>
+            <button class="header-btn" onclick="goToSettings()">⚙️</button>
+        </div>
 
-<div class="header">
-    ТНС Энерго
-</div>
+        <!-- HOME PAGE -->
+        <div class="page active" id="homePage">
+            <div class="account-card">
+                <div class="account-number">Лицевой счет: 123456789</div>
+                <div class="account-address">ул. Чехова, д. 15, кв. 42</div>
+                <div class="account-status">✓ Активен</div>
+            </div>
 
-<div class="card">
-    <h2>Баланс</h2>
+            <div id="debtContainer"></div>
 
-    <div class="balance">
-        1 245 ₽
+            <div class="section-title">Показания счетчиков</div>
+            <div id="metersList"></div>
+
+            <div class="section-title">Быстрые действия</div>
+            <div class="service-list">
+                <div class="service-card" onclick="goToPage('bills')">
+                    <div class="service-icon">📋</div>
+                    <div class="service-name">Счета</div>
+                </div>
+                <div class="service-card" onclick="alert('Внесение показаний')">
+                    <div class="service-icon">📊</div>
+                    <div class="service-name">Показания</div>
+                </div>
+                <div class="service-card" onclick="goToPage('payments')">
+                    <div class="service-icon">💳</div>
+                    <div class="service-name">Платежи</div>
+                </div>
+                <div class="service-card" onclick="alert('Уведомления и рассылка')">
+                    <div class="service-icon">🔔</div>
+                    <div class="service-name">Уведомления</div>
+                </div>
+            </div>
+
+            <button class="btn" onclick="openPaymentModal()">💰 Оплатить счет</button>
+        </div>
+
+        <!-- BILLS PAGE -->
+        <div class="page" id="billsPage">
+            <div class="info-box">
+                ℹ️ Здесь отображаются ваши счета за коммунальные услуги
+            </div>
+
+            <div class="section-title">Актуальные счета</div>
+            <div id="billsList"></div>
+        </div>
+
+        <!-- PAYMENTS PAGE -->
+        <div class="page" id="paymentsPage">
+            <div class="section-title">История платежей</div>
+            <div id="paymentsList"></div>
+        </div>
+
+        <!-- SETTINGS PAGE -->
+        <div class="page" id="settingsPage">
+            <div class="section-title">Уведомления</div>
+            
+            <div class="settings-item" onclick="toggleSetting('emailNotif')">
+                <div class="settings-item-text">
+                    <div class="settings-item-title">Email уведомления</div>
+                    <div class="settings-item-description">Счета и платежи по почте</div>
+                </div>
+                <div class="toggle-switch active" id="emailNotif"></div>
+            </div>
+
+            <div class="settings-item" onclick="toggleSetting('smsNotif')">
+                <div class="settings-item-text">
+                    <div class="settings-item-title">SMS уведомления</div>
+                    <div class="settings-item-description">Уведомления по SMS</div>
+                </div>
+                <div class="toggle-switch" id="smsNotif"></div>
+            </div>
+
+            <div class="settings-item" onclick="toggleSetting('pushNotif')">
+                <div class="settings-item-text">
+                    <div class="settings-item-title">Push-уведомления</div>
+                    <div class="settings-item-description">Уведомления в приложении</div>
+                </div>
+                <div class="toggle-switch active" id="pushNotif"></div>
+            </div>
+
+            <div class="section-title">Профиль</div>
+
+            <div class="settings-item" onclick="alert('Редактирование личных данных')">
+                <div class="settings-item-text">
+                    <div class="settings-item-title">Личные данные</div>
+                    <div class="settings-item-description">ФИО, телефон, почта</div>
+                </div>
+                <span style="font-size: 18px;">→</span>
+            </div>
+
+            <div class="settings-item" onclick="alert('Смена пароля')">
+                <div class="settings-item-text">
+                    <div class="settings-item-title">Безопасность</div>
+                    <div class="settings-item-description">Смена пароля и 2FA</div>
+                </div>
+                <span style="font-size: 18px;">→</span>
+            </div>
+
+            <div class="settings-item" onclick="alert('Адреса и лицевые счета')">
+                <div class="settings-item-text">
+                    <div class="settings-item-title">Мои адреса</div>
+                    <div class="settings-item-description">Управление счетами</div>
+                </div>
+                <span style="font-size: 18px;">→</span>
+            </div>
+
+            <div class="section-title">Поддержка</div>
+
+            <div class="settings-item" onclick="alert('support@tnsenergo.ru')">
+                <div class="settings-item-text">
+                    <div class="settings-item-title">Служба поддержки</div>
+                    <div class="settings-item-description">Связаться с нами</div>
+                </div>
+                <span style="font-size: 18px;">→</span>
+            </div>
+
+            <div class="settings-item" onclick="alert('О приложении ТНС Энерго v2.0')">
+                <div class="settings-item-text">
+                    <div class="settings-item-title">О приложении</div>
+                    <div class="settings-item-description">Версия 2.0</div>
+                </div>
+                <span style="font-size: 18px;">→</span>
+            </div>
+
+            <button class="btn btn-secondary" onclick="alert('Выход из аккаунта')">Выход</button>
+        </div>
+
+        <!-- BOTTOM NAVIGATION -->
+        <div class="bottom-nav">
+            <button class="nav-item active" onclick="goToPage('home')">
+                <span>🏠</span>
+                <span class="nav-label">Главная</span>
+            </button>
+            <button class="nav-item" onclick="goToPage('bills')">
+                <span>📋</span>
+                <span class="nav-label">Счета</span>
+            </button>
+            <button class="nav-item" onclick="goToPage('payments')">
+                <span>💳</span>
+                <span class="nav-label">Платежи</span>
+            </button>
+            <button class="nav-item" onclick="goToSettings()">
+                <span>⚙️</span>
+                <span class="nav-label">Настройки</span>
+            </button>
+        </div>
     </div>
-</div>
 
-<div class="card">
-    <h2>Показания</h2>
-
-    <input
-        type="number"
-        id="meterInput"
-        class="input"
-        placeholder="Введите показания"
-    >
-
-    <button class="button" onclick="saveMeter()">
-        Сохранить
-    </button>
-
-    <div id="savedText" class="saved"></div>
-</div>
-
-<div class="card">
-    <h2>Уведомления</h2>
-
-    <div class="notifications">
-
-        <div class="notification">
-            <div class="notification-title">
-                Передайте показания до 25 числа
+    <!-- PAYMENT MODAL -->
+    <div class="modal" id="paymentModal">
+        <div class="modal-content">
+            <div class="modal-title">Оплатить счет</div>
+            
+            <div class="info-box" style="margin-bottom: 16px;">
+                Сумма к оплате: <strong>1 250 ₽</strong>
             </div>
 
-            <div class="notification-date">
-                Сегодня
+            <input class="modal-input" type="number" id="paymentAmount" placeholder="Сумма" value="1250">
+            
+            <div style="margin-bottom: 16px;">
+                <div style="font-size: 13px; color: #666; margin-bottom: 8px;">Способ платежа:</div>
+                <select style="width: 100%; padding: 10px; border: 1px solid #dee2e6; border-radius: 6px; font-size: 14px;">
+                    <option>💳 Банковская карта</option>
+                    <option>📱 Мобильный платеж</option>
+                    <option>🏦 Через банк</option>
+                </select>
+            </div>
+
+            <div class="modal-buttons">
+                <button class="modal-btn cancel" onclick="closeModal('paymentModal')">Отмена</button>
+                <button class="modal-btn" onclick="processPayment()">Оплатить</button>
             </div>
         </div>
-
-        <div class="notification">
-            <div class="notification-title">
-                Платеж успешно зачислен
-            </div>
-
-            <div class="notification-date">
-                Вчера
-            </div>
-        </div>
-
-        <div class="notification">
-            <div class="notification-title">
-                Новые тарифы вступают в силу с 1 июня
-            </div>
-
-            <div class="notification-date">
-                2 дня назад
-            </div>
-        </div>
-
-        <div class="notification">
-            <div class="notification-title">
-                Плановые работы на сервисе ночью
-            </div>
-
-            <div class="notification-date">
-                3 дня назад
-            </div>
-        </div>
-
     </div>
-</div>
 
-<div class="spacer"></div>
+    <script>
+        let appData = {
+            account: {
+                number: '123456789',
+                address: 'ул. Чехова, д. 15, кв. 42',
+                status: 'active',
+                debt: 0
+            },
+            meters: [
+                { id: 1, name: 'Электроэнергия', reading: 24580, unit: 'кВт⋅ч', lastUpdate: '2026-05-25', limit: 24500 },
+                { id: 2, name: 'Водоснабжение', reading: 145230, unit: 'куб.м', lastUpdate: '2026-05-25', limit: 150000 },
+                { id: 3, name: 'Водоотведение', reading: 142890, unit: 'куб.м', lastUpdate: '2026-05-25', limit: 150000 }
+            ],
+            bills: [
+                { period: 'Май 2026', electricity: 450, water: 320, sewage: 280, total: 1050, paid: false },
+                { period: 'Апрель 2026', electricity: 420, water: 310, sewage: 270, total: 1000, paid: true },
+                { period: 'Март 2026', electricity: 380, water: 290, sewage: 250, total: 920, paid: true }
+            ],
+            payments: [
+                { date: '2026-04-20', amount: 1000, status: 'Успешно' },
+                { date: '2026-03-15', amount: 920, status: 'Успешно' },
+                { date: '2026-02-10', amount: 850, status: 'Успешно' }
+            ],
+            settings: {
+                emailNotif: true,
+                smsNotif: false,
+                pushNotif: true
+            }
+        };
 
-<div class="bottom-nav">
-    <div class="nav-item active">Главная</div>
-    <div class="nav-item">Показания</div>
-    <div class="nav-item">Оплата</div>
-    <div class="nav-item">Профиль</div>
-</div>
+        let currentPage = 'home';
 
-<script>
-function saveMeter(){
+        function goToPage(page) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.getElementById(page + 'Page').classList.add('active');
+            
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            event.target.closest('.nav-item')?.classList.add('active');
+            
+            currentPage = page;
 
-    const value =
-        document.getElementById('meterInput').value;
+            if (page === 'home') renderHome();
+            if (page === 'bills') renderBills();
+            if (page === 'payments') renderPayments();
+        }
 
-    if(value === ''){
-        alert('Введите показания');
-        return;
-    }
+        function goToSettings() {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.getElementById('settingsPage').classList.add('active');
+            currentPage = 'settings';
+            
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            document.querySelectorAll('.nav-item')[3].classList.add('active');
+        }
 
-    localStorage.setItem('meterValue', value);
+        function renderHome() {
+            // Render debt or no debt
+            const debtContainer = document.getElementById('debtContainer');
+            if (appData.account.debt > 0) {
+                debtContainer.innerHTML = `
+                    <div class="debt-section">
+                        <div class="debt-title">Задолженность</div>
+                        <div class="debt-amount">${appData.account.debt} ₽</div>
+                        <div class="debt-note">Просим погасить задолженность как можно скорее</div>
+                    </div>
+                `;
+            } else {
+                debtContainer.innerHTML = `
+                    <div class="no-debt">
+                        <div class="no-debt-check">✓</div>
+                        <div class="no-debt-text">Нет задолженности</div>
+                    </div>
+                `;
+            }
 
-    document.getElementById('savedText').innerText =
-        'Сохранено значение: ' + value;
-}
+            // Render meters
+            const metersList = document.getElementById('metersList');
+            metersList.innerHTML = appData.meters.map(meter => `
+                <div class="meter-card">
+                    <div class="meter-header">
+                        <div class="meter-name">${meter.name}</div>
+                        <div class="meter-status">Активен</div>
+                    </div>
+                    <div class="meter-reading">
+                        <div>
+                            <div class="reading-value">${meter.reading}</div>
+                            <div class="reading-unit">${meter.unit}</div>
+                        </div>
+                    </div>
+                    <div class="meter-info">
+                        <div class="meter-info-item">
+                            <span>Последнее обновление:</span>
+                            <span>${meter.lastUpdate}</span>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
 
-window.onload = function(){
+        function renderBills() {
+            const billsList = document.getElementById('billsList');
+            billsList.innerHTML = appData.bills.map(bill => `
+                <div class="bill-item">
+                    <div class="bill-period">${bill.period}</div>
+                    <div class="bill-row">
+                        <span class="bill-label">Электроэнергия:</span>
+                        <span class="bill-value">${bill.electricity} ₽</span>
+                    </div>
+                    <div class="bill-row">
+                        <span class="bill-label">Водоснабжение:</span>
+                        <span class="bill-value">${bill.water} ₽</span>
+                    </div>
+                    <div class="bill-row">
+                        <span class="bill-label">Водоотведение:</span>
+                        <span class="bill-value">${bill.sewage} ₽</span>
+                    </div>
+                    <div class="bill-total">
+                        <span>Итого:</span>
+                        <span>${bill.total} ₽</span>
+                    </div>
+                    <div class="bill-status ${bill.paid ? 'paid' : 'unpaid'}">
+                        ${bill.paid ? '✓ Оплачено' : '⏳ Ожидает оплаты'}
+                    </div>
+                </div>
+            `).join('');
+        }
 
-    const saved =
-        localStorage.getItem('meterValue');
+        function renderPayments() {
+            const paymentsList = document.getElementById('paymentsList');
+            paymentsList.innerHTML = appData.payments.map(payment => `
+                <div class="payment-item">
+                    <div>
+                        <div class="payment-date">${payment.date}</div>
+                        <div>${payment.status}</div>
+                    </div>
+                    <div class="payment-amount">+${payment.amount} ₽</div>
+                </div>
+            `).join('');
+        }
 
-    if(saved){
+        function openPaymentModal() {
+            document.getElementById('paymentModal').classList.add('active');
+        }
 
-        document.getElementById('savedText').innerText =
-            'Сохранено значение: ' + saved;
+        function closeModal(id) {
+            document.getElementById(id).classList.remove('active');
+        }
 
-        document.getElementById('meterInput').value =
-            saved;
-    }
-}
-</script>
+        function processPayment() {
+            const amount = document.getElementById('paymentAmount').value;
+            if (!amount || amount <= 0) {
+                alert('Введите корректную сумму');
+                return;
+            }
+            
+            appData.payments.unshift({
+                date: new Date().toISOString().split('T')[0],
+                amount: parseInt(amount),
+                status: 'Успешно'
+            });
+            
+            alert('Платеж на сумму ' + amount + ' ₽ выполнен успешно!');
+            closeModal('paymentModal');
+        }
 
+        function toggleSetting(settingId) {
+            const element = document.getElementById(settingId);
+            appData.settings[settingId] = !appData.settings[settingId];
+            element.classList.toggle('active');
+        }
+
+        renderHome();
+    </script>
 </body>
 </html>
