@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Верный Pay</title>
+
+<style>
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+}
+
+body{
+background:#000;
+color:#fff;
+display:flex;
+justify-content:center;
+align-items:center;
+min-height:100vh;
+}
+
+.phone{
+width:390px;
+height:844px;
+background:#111;
+border-radius:40px;
+overflow:hidden;
+position:relative;
+box-shadow:0 0 40px rgba(0,0,0,0.6);
+}
+
+.header{
+padding:60px 24px 20px;
+display:flex;
+justify-content:space-between;
+align-items:center;
+}
+
+.logo{
+font-size:32px;
+font-weight:700;
+}
+
+.balance{
+padding:0 24px;
+margin-top:10px;
+}
+
+.balance-title{
+color:#aaa;
+font-size:14px;
+margin-bottom:8px;
+}
+
+.balance-amount{
+font-size:42px;
+font-weight:700;
+}
+
+.card{
+margin:24px;
+height:220px;
+border-radius:28px;
+padding:24px;
+background:linear-gradient(135deg,#00c853,#008f3d);
+position:relative;
+overflow:hidden;
+}
+
+.card::before{
+content:'';
+position:absolute;
+width:220px;
+height:220px;
+background:rgba(255,255,255,0.1);
+border-radius:50%;
+top:-60px;
+right:-60px;
+}
+
+.card-title{
+font-size:22px;
+font-weight:700;
+}
+
+.card-number{
+margin-top:70px;
+font-size:24px;
+letter-spacing:3px;
+}
+
+.card-user{
+margin-top:20px;
+font-size:16px;
+}
+
+.actions{
+display:flex;
+gap:14px;
+padding:0 24px;
+}
+
+.action-btn{
+flex:1;
+background:#1d1d1d;
+border:none;
+color:#fff;
+padding:18px;
+border-radius:20px;
+font-size:16px;
+font-weight:600;
+cursor:pointer;
+transition:0.3s;
+}
+
+.action-btn:hover{
+background:#2b2b2b;
+}
+
+.section{
+padding:30px 24px 10px;
+font-size:20px;
+font-weight:700;
+}
+
+.history{
+padding:0 24px;
+}
+
+.item{
+background:#1a1a1a;
+border-radius:18px;
+padding:18px;
+display:flex;
+justify-content:space-between;
+align-items:center;
+margin-bottom:14px;
+}
+
+.item-left{
+display:flex;
+flex-direction:column;
+gap:4px;
+}
+
+.item-title{
+font-size:16px;
+font-weight:600;
+}
+
+.item-date{
+font-size:13px;
+color:#888;
+}
+
+.item-price{
+font-size:18px;
+font-weight:700;
+color:#00d15f;
+}
+
+.bottom-nav{
+position:absolute;
+bottom:0;
+left:0;
+right:0;
+height:85px;
+background:#121212;
+display:flex;
+justify-content:space-around;
+align-items:center;
+border-top:1px solid rgba(255,255,255,0.08);
+}
+
+.nav-btn{
+background:none;
+border:none;
+color:#888;
+font-size:14px;
+text-align:center;
+cursor:pointer;
+}
+
+.nav-btn.active{
+color:#00d15f;
+}
+
+.qr-screen{
+position:absolute;
+inset:0;
+background:#000;
+display:none;
+flex-direction:column;
+align-items:center;
+justify-content:center;
+padding:30px;
+z-index:100;
+}
+
+.qr-box{
+width:240px;
+height:240px;
+background:#fff;
+border-radius:20px;
+display:flex;
+align-items:center;
+justify-content:center;
+color:#000;
+font-size:26px;
+font-weight:700;
+}
+
+.close-btn{
+margin-top:30px;
+background:#00c853;
+color:white;
+border:none;
+padding:16px 30px;
+border-radius:18px;
+font-size:18px;
+cursor:pointer;
+}
+
+</style>
+</head>
+<body>
+
+<div class="phone">
+
+<div class="header">
+<div class="logo">Верный Pay</div>
+<div>⚙️</div>
+</div>
+
+<div class="balance">
+<div class="balance-title">Баланс</div>
+<div class="balance-amount">₽ 24 580</div>
+</div>
+
+<div class="card">
+<div class="card-title">VERNY PAY</div>
+<div class="card-number">2200 •••• •••• 4581</div>
+<div class="card-user">ALEKSEY</div>
+</div>
+
+<div class="actions">
+<button class="action-btn" onclick="openQR()">QR Оплата</button>
+<button class="action-btn" onclick="showAlert()">Онлайн</button>
+</div>
+
+<div class="section">История</div>
+
+<div class="history">
+
+<div class="item">
+<div class="item-left">
+<div class="item-title">Верный</div>
+<div class="item-date">Сегодня • 18:42</div>
+</div>
+<div class="item-price">-₽ 1 240</div>
+</div>
+
+<div class="item">
+<div class="item-left">
+<div class="item-title">Кэшбэк</div>
+<div class="item-date">Сегодня • 16:12</div>
+</div>
+<div class="item-price">+₽ 125</div>
+</div>
+
+<div class="item">
+<div class="item-left">
+<div class="item-title">Пополнение</div>
+<div class="item-date">Вчера • 11:08</div>
+</div>
+<div class="item-price">+₽ 5 000</div>
+</div>
+
+</div>
+
+<div class="bottom-nav">
+<button class="nav-btn active">Главная</button>
+<button class="nav-btn">Карта</button>
+<button class="nav-btn">Платежи</button>
+<button class="nav-btn">Профиль</button>
+</div>
+
+<div class="qr-screen" id="qrScreen">
+<div class="qr-box">QR PAY</div>
+<button class="close-btn" onclick="closeQR()">Закрыть</button>
+</div>
+
+</div>
+
+<script>
+function openQR(){
+document.getElementById('qrScreen').style.display='flex';
+}
+
+function closeQR(){
+document.getElementById('qrScreen').style.display='none';
+}
+
+function showAlert(){
+alert('Онлайн оплата активирована');
+}
+</script>
+
+</body>
+</html>
