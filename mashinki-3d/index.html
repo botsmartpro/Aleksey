@@ -1,0 +1,259 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover,user-scalable=no">
+<meta name="theme-color" content="#081624">
+<title>Машинки 2026 — горизонтальная 3D-гонка</title>
+<style>
+:root{--txt:#effaff;--line:#ffffff28;--teal:#7cf5db;--amber:#ffca6c}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{width:100%;height:100%;margin:0;overflow:hidden;background:#061320;color:var(--txt);font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;touch-action:none;overscroll-behavior:none}
+#game{position:fixed;inset:0;overflow:hidden}
+#scene{display:block;width:100%;height:100%}
+.top{position:absolute;left:max(13px,env(safe-area-inset-left));right:max(13px,env(safe-area-inset-right));top:max(7px,env(safe-area-inset-top));display:flex;align-items:center;justify-content:space-between;gap:12px;pointer-events:none}
+.brand{display:flex;flex-direction:column;white-space:nowrap;text-shadow:0 2px 10px #000a}
+.brand b{font-size:clamp(13px,2.9vw,21px);letter-spacing:.04em}
+.brand small{font-size:clamp(8px,1.2vw,10px);color:#d6e6ee}
+.metrics{display:flex;align-items:center;justify-content:center;gap:5px}
+.metric{display:flex;flex-direction:column;min-width:74px;align-items:center;padding:6px 10px;border:1px solid #ffffff35;border-radius:11px;background:#071526ca;box-shadow:0 3px 14px #0006;backdrop-filter:blur(6px)}
+.metric small{font-size:9px;text-transform:uppercase;color:#a7c0d1;font-weight:800;letter-spacing:.07em}
+.metric strong{font-size:clamp(13px,2.9vw,20px);line-height:1.1;font-variant-numeric:tabular-nums}
+.metric.damage strong{color:#ffae8c}
+.trophies{display:flex;flex-direction:column;align-items:flex-end;gap:2px;padding:5px 10px;border-radius:10px;background:#071526a6;border:1px solid #ffffff2a}
+.trophies small{font-size:9px;color:#b9ceda}
+.cups{display:flex;gap:6px;font-size:21px}
+.cups span{opacity:.22;filter:grayscale(1)}
+.cups span.got{opacity:1;filter:none;text-shadow:0 0 11px #ffb727}
+.controls{position:absolute;bottom:max(9px,env(safe-area-inset-bottom));left:max(13px,env(safe-area-inset-left));right:max(13px,env(safe-area-inset-right));display:flex;align-items:end;justify-content:space-between;pointer-events:none;gap:12px}
+.pad,.pedals{display:flex;gap:7px;pointer-events:auto;align-items:center}
+.ctrl{border:1px solid #9cbed1a0;border-radius:15px;width:clamp(55px,8.5vw,85px);height:clamp(46px,10vh,64px);background:linear-gradient(150deg,#1d3850ed,#102034e9);color:white;font-size:25px;font-weight:900;touch-action:none;user-select:none;-webkit-user-select:none;box-shadow:0 5px 20px #0007;cursor:pointer}
+.ctrl:active,.ctrl.on{background:#3e8d99;transform:translateY(2px)}
+.ctrl.gas{width:clamp(70px,12vw,110px);background:linear-gradient(145deg,#ffe497,#f0a239);border-color:#fff3be;color:#362c13;font-size:15px}
+.ctrl.gas.on{background:#fff0b2}
+.ctrl.brake{width:clamp(55px,8vw,75px);font-size:12px;background:linear-gradient(135deg,#92565e,#512d3a)}
+.ctrl.vertical{font-size:17px;width:clamp(41px,6vw,52px)}
+#stop{position:absolute;bottom:max(87px,env(safe-area-inset-bottom) + 74px);right:max(13px,env(safe-area-inset-right));border:1px solid #ffffff45;border-radius:9px;padding:6px 12px;color:#eaf5f9;background:#091b2bd9;font-size:11px;font-weight:800;cursor:pointer}
+#stop:disabled{opacity:.35}
+#dialogLayer{position:absolute;inset:0;display:flex;justify-content:center;align-items:center;background:linear-gradient(120deg,#061321c4,#071c30bb);padding:12px;z-index:5}
+#dialogLayer.hide{display:none}
+.dialog{width:min(420px,80%);max-height:94%;overflow:auto;text-align:center;padding:17px 23px;border-radius:20px;border:1px solid #b7f6ee75;background:linear-gradient(155deg,#274355f2,#0b1c2deF);box-shadow:0 12px 45px #000a}
+.symbol{font-size:36px}
+.dialog h1{font-size:clamp(20px,3.8vw,29px);margin:3px 0 5px}
+.dialog p{font-size:clamp(11px,1.6vw,14px);line-height:1.43;color:#d5e4ec;margin:0 0 12px}
+#play{border:0;border-radius:11px;padding:11px 21px;width:100%;font-size:16px;font-weight:900;color:#082a32;background:linear-gradient(110deg,#80ffcf,#41cbeb);cursor:pointer}
+#rotate{position:absolute;inset:0;display:none;z-index:20;background:linear-gradient(#071524,#16475b);text-align:center;flex-direction:column;justify-content:center;align-items:center;padding:24px}
+#rotate .phone{font-size:70px;animation:turn 2s ease-in-out infinite alternate}
+#rotate h2{font-size:24px;margin:8px}
+#rotate p{max-width:330px;color:#cfecf8;font-size:15px}
+@keyframes turn{to{transform:rotate(85deg)}}
+@media (orientation:portrait) and (max-width:760px){#rotate{display:flex}}
+@media (max-height:390px){.top{top:3px}.brand small{display:none}.metric{padding:4px 7px}.ctrl{height:45px;border-radius:10px}#stop{bottom:63px}.controls{bottom:5px}.dialog{padding:9px 18px}.dialog h1{font-size:19px}.dialog p{font-size:11px;margin-bottom:6px}}
+</style>
+</head>
+<body>
+<div id="game">
+<canvas id="scene" aria-label="Горизонтальная гонка с 3D-перспективой под углом примерно 30 градусов"></canvas>
+<header class="top">
+<div class="brand"><b>⚡ МАШИНКИ 2026</b><small>Городская гонка • вид сзади 30°</small></div>
+<div class="metrics">
+<div class="metric"><small>Уровень</small><strong id="level">1 / 3</strong></div>
+<div class="metric"><small>Осталось</small><strong id="time">10.0 с</strong></div>
+<div class="metric damage"><small>Лобовые</small><strong id="hits">0 / 3</strong></div>
+<div class="metric"><small>Очки</small><strong id="score">0</strong></div>
+</div>
+<div class="trophies"><small>КУБКИ</small><div class="cups"><span id="cup1">🏆</span><span id="cup2">🏆</span><span id="cup3">🏆</span></div></div>
+</header>
+<button type="button" id="stop" disabled>■ СТОП</button>
+<div class="controls">
+<div class="pad">
+<button class="ctrl" data-key="left" aria-label="Влево">◀</button>
+<button class="ctrl vertical" data-key="up" aria-label="Вперёд">▲</button>
+<button class="ctrl vertical" data-key="down" aria-label="Назад">▼</button>
+<button class="ctrl" data-key="right" aria-label="Вправо">▶</button>
+</div>
+<div class="pedals">
+<button class="ctrl brake" data-key="brake" aria-label="Тормоз">ТОРМОЗ</button>
+<button class="ctrl gas" data-key="gas" aria-label="Газ">⚡ ГАЗ</button>
+</div>
+</div>
+<div id="dialogLayer"><div class="dialog">
+<div class="symbol" id="symbol">🏁</div>
+<h1 id="heading">Гонка под углом 30°</h1>
+<p id="message">Поверни iPhone горизонтально. Езжай к горизонту, используй трамплины, выбивай машины боковым тараном. Каждый из трёх уровней длится 10 секунд и приносит кубок. После трёх лобовых — конец игры.</p>
+<button id="play">НАЧАТЬ ГОНКУ →</button>
+</div></div>
+<div id="rotate"><div class="phone">📱</div><h2>Поверни телефон горизонтально</h2><p>Новая версия рассчитана на широкий экран. После поворота управление и трасса появятся автоматически.</p></div>
+</div>
+<script>
+(function(){
+"use strict";
+const canvas=document.getElementById('scene'),ctx=canvas.getContext('2d');
+const $=id=>document.getElementById(id),W=960,H=540,HALF=480,HORIZON=111,ROAD_MAX=300;
+const COLORS=['#f3f5f0','#b0c5dc','#e0b49a','#344154','#8bcae3','#a0aac0','#b96c73'];
+const keys={left:false,right:false,up:false,down:false,brake:false,gas:false};
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v)),rand=(a,b)=>a+Math.random()*(b-a);
+let mode='ready',level=1,sec=0,points=0,cups=0,front=0,shunted=0,energy=1,elapsed=0;
+let player={x:0,z:.69},traffic=[],ramps=[],wrecks=[],sparks=[],trafficDelay=.7,rampDelay=2,scroll=0,grace=0,jump=0,flash=0,last=0,audio=null;
+function rr(x,y,w,h,r,col){ctx.beginPath();if(ctx.roundRect)ctx.roundRect(x,y,w,h,r);else{ctx.moveTo(x+r,y);ctx.lineTo(x+w-r,y);ctx.quadraticCurveTo(x+w,y,x+w,y+r);ctx.lineTo(x+w,y+h-r);ctx.quadraticCurveTo(x+w,y+h,x+w-r,y+h);ctx.lineTo(x+r,y+h);ctx.quadraticCurveTo(x,y+h,x,y+h-r);ctx.lineTo(x,y+r);ctx.quadraticCurveTo(x,y,x+r,y);ctx.closePath()}ctx.fillStyle=col;ctx.fill()}
+function proj(z){z=clamp(z,0,1.4);const t=Math.pow(z,1.3);return {y:HORIZON+482*Math.pow(z,1.46),half:51+ROAD_MAX*Math.pow(z,1.05),scale:.15+.85*t};}
+function pos(x,z){const p=proj(z);return {x:HALF+x*p.half*.88,y:p.y,p};}
+function poly(points,col){ctx.fillStyle=col;ctx.beginPath();ctx.moveTo(points[0][0],points[0][1]);for(let i=1;i<points.length;i++)ctx.lineTo(points[i][0],points[i][1]);ctx.closePath();ctx.fill()}
+function sound(f,d,type){try{const Audio=window.AudioContext||window.webkitAudioContext;if(!Audio)return;if(!audio)audio=new Audio();if(audio.state==='suspended')audio.resume();const osc=audio.createOscillator(),gain=audio.createGain();osc.type=type||'sine';osc.frequency.setValueAtTime(f,audio.currentTime);osc.frequency.exponentialRampToValueAtTime(Math.max(50,f*.62),audio.currentTime+d);gain.gain.setValueAtTime(.065,audio.currentTime);gain.gain.exponentialRampToValueAtTime(.001,audio.currentTime+d);osc.connect(gain);gain.connect(audio.destination);osc.start();osc.stop(audio.currentTime+d)}catch(e){}}
+function updateHud(){$('level').textContent=level+' / 3';$('time').textContent=Math.max(0,10-sec).toFixed(1)+' с';$('hits').textContent=front+' / 3';$('score').textContent=points;for(let i=1;i<=3;i++)$('cup'+i).classList.toggle('got',i<=cups)}
+function release(){Object.keys(keys).forEach(k=>keys[k]=false);document.querySelectorAll('.ctrl').forEach(b=>b.classList.remove('on'))}
+function dialog(icon,title,desc,btn){$('symbol').textContent=icon;$('heading').textContent=title;$('message').textContent=desc;$('play').textContent=btn;$('dialogLayer').classList.remove('hide');$('stop').disabled=true;release();updateHud()}
+function reset(){mode='running';level=1;sec=0;elapsed=0;points=0;cups=0;front=0;shunted=0;energy=1;scroll=0;player={x:0,z:.69};traffic=[];ramps=[];wrecks=[];sparks=[];grace=0;jump=0;flash=0;trafficDelay=.8;rampDelay=2.2;release();$('stop').disabled=false;$('dialogLayer').classList.add('hide');updateHud()}
+function finish(win){mode=win?'won':'lost';dialog(win?'🏆':'💥',win?'ЧЕМПИОН! Три кубка!':'Третье лобовое столкновение',win?'Все три уровня пройдены! 🏆🏆🏆 Набрано очков: '+points+'.':'Получено кубков: '+cups+'/3. Боковых таранов: '+shunted+'. Очки: '+points+'.','ИГРАТЬ ЕЩЁ РАЗ ↻');sound(win?880:115,.3,win?'triangle':'sawtooth')}
+function levelPassed(){cups=level;if(level>=3){finish(true);return}mode='leveldone';dialog('🏆','Кубок за уровень '+level+'!','Поздравляем! Кубков: '+cups+'/3. Следующий уровень быстрее. Лобовые столкновения сохраняются.','УРОВЕНЬ '+(level+1)+' →');sound(970,.19,'triangle')}
+function advance(){level++;sec=0;mode='running';traffic=[];ramps=[];wrecks=[];trafficDelay=.75;rampDelay=2;grace=.8;jump=0;$('stop').disabled=false;$('dialogLayer').classList.add('hide');updateHud()}
+function begin(){if(mode==='running')return;if(mode==='leveldone')advance();else reset();sound(680,.08,'triangle')}
+function spawnCar(){const lane=[-.63,0,.63][Math.floor(rand(0,3))];traffic.push({x:lane+rand(-.055,.055),z:-.02,vel:rand(.005,.045),color:COLORS[Math.floor(rand(0,COLORS.length))],model:Math.random()<.5?'Li':'Z',counted:false})}
+function spawnRamp(){const lane=[-.63,0,.63][Math.floor(rand(0,3))];ramps.push({x:lane,z:-.04})}
+function splash(x,z,col){for(let i=0;i<15;i++)sparks.push({x,z,dx:rand(-1.5,1.5),dz:rand(-.35,.48),life:rand(.15,.65),col})}
+function fling(car,dir){wrecks.push({x:car.x,z:car.z,dir:dir,vel:rand(1.1,1.8),spin:rand(5,8)*dir,angle:0,color:car.color,model:car.model,life:1.1});splash(car.x,car.z,'#ffe5a1')}
+function update(dt){
+  if(mode!=='running')return;
+  sec+=dt;elapsed+=dt;
+  if(sec>=10){sec=10;levelPassed();return}
+  grace=Math.max(0,grace-dt);jump=Math.max(0,jump-dt);flash=Math.max(0,flash-dt);
+  const throttle=keys.gas?1.4:keys.brake?.55:1;
+  const speed=(.28+(level-1)*.05)*throttle;
+  player.x=clamp(player.x+((keys.right?1:0)-(keys.left?1:0))*dt*1.18,-.86,.86);
+  player.z=clamp(player.z+((keys.up?1:0)-(keys.down?1:0))*dt*.24,.58,.78);
+  scroll=(scroll+speed*dt)%1;
+  trafficDelay-=dt;if(trafficDelay<=0){spawnCar();trafficDelay=rand(1.05,1.45)-(level-1)*.16}
+  rampDelay-=dt;if(rampDelay<=0){spawnRamp();rampDelay=rand(4.1,5.5)-(level-1)*.55}
+  for(let i=ramps.length-1;i>=0;i--){
+    const r=ramps[i];r.z+=(speed+.02)*dt;
+    if(Math.abs(r.z-player.z)<.062&&Math.abs(r.x-player.x)<.24&&jump<=0){jump=1.15;points+=90;sound(910,.21,'triangle');splash(player.x,player.z,'#75fff1');ramps.splice(i,1);continue}
+    if(r.z>1.21)ramps.splice(i,1);
+  }
+  for(let i=traffic.length-1;i>=0;i--){
+    const r=traffic[i];r.z+=(speed+r.vel)*dt;
+    if(!r.counted&&r.z>player.z+.13){r.counted=true;points+=10}
+    if(jump<=0&&Math.abs(r.z-player.z)<.059&&Math.abs(r.x-player.x)<.31){
+      const dx=r.x-player.x;
+      if(Math.abs(dx)>.135){
+        fling(r,Math.sign(dx)||1);shunted++;points+=45;sound(340,.12,'sawtooth');traffic.splice(i,1);continue;
+      }
+      fling(r,dx>=0?1:-1);traffic.splice(i,1);
+      if(grace<=0){front++;grace=1.3;flash=.45;sound(130,.2,'sawtooth');if(front>=3){finish(false);break}}
+      continue;
+    }
+    if(r.z>1.25)traffic.splice(i,1);
+  }
+  for(let i=wrecks.length-1;i>=0;i--){const w=wrecks[i];w.x+=w.dir*w.vel*dt;w.z+=speed*dt*.5;w.angle+=w.spin*dt;w.life-=dt;if(w.life<=0||Math.abs(w.x)>2.8)wrecks.splice(i,1)}
+  for(let i=sparks.length-1;i>=0;i--){const p=sparks[i];p.x+=p.dx*dt;p.z+=p.dz*dt;p.life-=dt;if(p.life<=0)sparks.splice(i,1)}
+  updateHud();
+}
+function background(){
+  const sky=ctx.createLinearGradient(0,0,0,250);sky.addColorStop(0,level===3?'#142c48':'#5489ab');sky.addColorStop(.65,level===3?'#516888':'#a3d2de');sky.addColorStop(1,'#d8e0bf');ctx.fillStyle=sky;ctx.fillRect(0,0,W,H);
+  const sun=level===3?'#e0a67c':'#fff3c7';ctx.fillStyle=sun;ctx.beginPath();ctx.arc(770,74,33,0,Math.PI*2);ctx.fill();
+  // Distant tall buildings along the horizon, viewed from the rear of a car.
+  for(let i=0;i<29;i++){const bw=25+(i*17%43),bh=24+(i*29%76),x=i*37-35;ctx.fillStyle=i%3?'#718f9a':'#849fa5';ctx.fillRect(x,HORIZON-bh,bw,bh+16);ctx.fillStyle='#d9e4d0';for(let t=1;t<3;t++)ctx.fillRect(x+6*t,HORIZON-bh+9,3,4)}
+  ctx.fillStyle='#6c976f';ctx.fillRect(0,HORIZON,W,H-HORIZON);
+}
+function road(){
+  const far=proj(0),near=proj(1.15);
+  // Shoulders and pavements establish a strong camera perspective.
+  poly([[HALF-far.half-18,HORIZON],[HALF+far.half+18,HORIZON],[HALF+near.half+28,near.y],[HALF-near.half-28,near.y]],'#d3c9b0');
+  poly([[HALF-far.half,HORIZON],[HALF+far.half,HORIZON],[HALF+near.half,near.y],[HALF-near.half,near.y]],'#303e48');
+  const sheen=ctx.createLinearGradient(0,HORIZON,0,H);sheen.addColorStop(0,'#354f60');sheen.addColorStop(1,'#202932');
+  poly([[HALF-far.half+3,HORIZON],[HALF+far.half-3,HORIZON],[HALF+near.half-3,near.y],[HALF-near.half+3,near.y]],sheen);
+  for(const side of [-1,1]){
+    ctx.strokeStyle='#f6e3b2';ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(HALF+side*(far.half-2),HORIZON);ctx.lineTo(HALF+side*(near.half-2),near.y);ctx.stroke();
+    ctx.strokeStyle='#ffffff44';ctx.lineWidth=9;ctx.beginPath();ctx.moveTo(HALF+side*(far.half+11),HORIZON);ctx.lineTo(HALF+side*(near.half+11),near.y);ctx.stroke();
+  }
+  // Moving lane markings get wider as they approach the viewer.
+  for(let lane of [-1/3,1/3]){
+    for(let z=.03;z<1.15;z+=.12){
+      const zz=(z+scroll*.8)%1.17,p1=proj(zz),p2=proj(Math.min(1.17,zz+.055));
+      const x1=HALF+lane*p1.half,x2=HALF+lane*p2.half;
+      const thick=1+zz*6;
+      poly([[x1-thick,p1.y],[x1+thick,p1.y],[x2+thick,p2.y],[x2-thick,p2.y]],'#f5f1d8');
+    }
+  }
+}
+function building(x,y,size,seed){
+  const bw=48*size,bh=(47+(seed%4)*8)*size,roof=14*size;
+  const front=seed%3===0?'#d5b59a':seed%3===1?'#85a6ba':'#bdc2aa';
+  poly([[x-bw/2,y],[x+bw/2,y],[x+bw/2,y-bh],[x-bw/2,y-bh]],front);
+  poly([[x-bw/2,y-bh],[x-bw/2+roof,y-bh-roof],[x+bw/2+roof,y-bh-roof],[x+bw/2,y-bh]],'#536e7f');
+  poly([[x+bw/2,y],[x+bw/2+roof,y-roof],[x+bw/2+roof,y-bh-roof],[x+bw/2,y-bh]],'#698b98');
+  if(size>.27){ctx.fillStyle=level===3?'#fce4a6':'#31546e';for(let row=0;row<2;row++)for(let col=0;col<3;col++)ctx.fillRect(x-bw*.38+col*bw*.27,y-bh*.76+row*bh*.35,Math.max(2,bw*.16),Math.max(2,bh*.16))}
+}
+function tree(x,y,size){ctx.fillStyle='#253e32';ctx.fillRect(x-3*size,y-23*size,6*size,26*size);for(const [dx,dy,r,c] of [[-12,-38,17,'#23644b'],[11,-40,17,'#2d7759'],[0,-49,18,'#4f9d70']]){ctx.fillStyle=c;ctx.beginPath();ctx.arc(x+dx*size,y+dy*size,r*size,0,Math.PI*2);ctx.fill()}}
+function parking(x,y,size,side){const w=72*size,h=54*size;poly([[x-w/2,y],[x+w/2,y],[x+w/2+side*18*size,y-h],[x-w/2+side*18*size,y-h]],'#607583');ctx.strokeStyle='#f0ede4';ctx.lineWidth=Math.max(1,2*size);for(let i=-1;i<=1;i++){ctx.beginPath();ctx.moveTo(x+i*20*size,y);ctx.lineTo(x+(i*20+side*18)*size,y-h);ctx.stroke()}for(let i=-1;i<=1;i++){const xx=x+i*21*size+side*11*size,yy=y-27*size;rr(xx-5*size,yy-9*size,10*size,18*size,2*size,['#d9e6eb','#e4a686','#a6cbcb'][i+1])}}
+function city(){
+  const blocks=[];
+  for(let i=0;i<12;i++){const z=((i*.128+scroll*1.35)%1.28);if(z>.02&&z<1.2)blocks.push({z,idx:i})}
+  blocks.sort((a,b)=>a.z-b.z);
+  for(const b of blocks){
+    const p=proj(b.z),scale=.12+1.3*Math.pow(b.z,1.35);
+    for(const side of [-1,1]){
+      const place=HALF+side*(p.half+45*scale);
+      const kind=(b.idx+(side===1?2:0))%5;
+      if(kind===0||kind===3)building(place+side*18*scale,p.y+4,scale,b.idx+side);
+      else if(kind===1)parking(place+side*12*scale,p.y+9,scale,side);
+      else{tree(place,p.y,scale);tree(place+side*39*scale,p.y+6,scale*.64)}
+      // Repeating lamps and pedestrian pavement.
+      if(b.z>.26){const lx=HALF+side*(p.half+15*scale);ctx.fillStyle='#44555e';ctx.fillRect(lx-2*scale,p.y-32*scale,4*scale,35*scale);ctx.fillStyle='#fff2ab';ctx.beginPath();ctx.arc(lx,p.y-33*scale,5*scale,0,Math.PI*2);ctx.fill()}
+    }
+  }
+}
+function car(x,z,color,model,isPlayer,angle){
+  const p=pos(x,z),sc=(.17+.96*Math.pow(clamp(z,0,1.2),1.3))*(isPlayer?1.05:1);
+  const w=65*sc,h=99*sc;
+  ctx.save();ctx.translate(p.x,p.y-h*.5);ctx.rotate(angle||0);
+  ctx.shadowColor='#0a1728';ctx.shadowBlur=14*sc;ctx.shadowOffsetY=7*sc;
+  // Roof, glass canopy and distinctive lights of 2026 Chinese EV-inspired models.
+  const body=ctx.createLinearGradient(-w/2,-h/2,w/2,h/2);body.addColorStop(0,'#ffffff');body.addColorStop(.1,color);body.addColorStop(.75,color);body.addColorStop(1,'#243a4a');
+  rr(-w*.5,-h*.5,w,h,12*sc,body);ctx.shadowBlur=0;ctx.shadowOffsetY=0;
+  rr(-w*.38,-h*.34,w*.76,h*.48,11*sc,'#213e53');
+  rr(-w*.32,-h*.28,w*.64,h*.15,5*sc,'#528aa5');
+  rr(-w*.30,h*.04,w*.60,h*.12,4*sc,'#456878');
+  ctx.lineWidth=3.5*sc;ctx.lineCap='round';
+  ctx.strokeStyle=isPlayer?'#ff4768':'#e8fcff';ctx.shadowColor=isPlayer?'#ff324b':'#b2f5ff';ctx.shadowBlur=7*sc;ctx.beginPath();
+  if(model==='Li'){ctx.moveTo(-w*.38,isPlayer?h*.39:-h*.41);ctx.lineTo(w*.38,isPlayer?h*.39:-h*.41)}
+  else{ctx.moveTo(-w*.4,isPlayer?h*.4:-h*.41);ctx.lineTo(-w*.13,isPlayer?h*.4:-h*.41);ctx.moveTo(w*.13,isPlayer?h*.4:-h*.41);ctx.lineTo(w*.4,isPlayer?h*.4:-h*.41)}
+  ctx.stroke();ctx.shadowBlur=0;
+  ctx.strokeStyle=isPlayer?'#e5ffff':'#fc5474';ctx.lineWidth=3*sc;ctx.beginPath();
+  ctx.moveTo(-w*.37,isPlayer?-h*.41:h*.4);ctx.lineTo(w*.37,isPlayer?-h*.41:h*.4);ctx.stroke();
+  ctx.restore();
+}
+function ramp(r){const p=pos(r.x,r.z),k=.2+1.1*Math.pow(Math.max(0,r.z),1.3),w=100*k,h=42*k;ctx.save();ctx.translate(p.x,p.y);poly([[-w/2,0],[w/2,0],[w*.38,-h],[-w*.38,-h]],'#f1a52f');poly([[-w*.38,-h],[w*.38,-h],[w*.31,-h*1.1],[-w*.31,-h*1.1]],'#ffe493');ctx.strokeStyle='#613e1f';ctx.lineWidth=4*k;for(let j=-1;j<=1;j++){ctx.beginPath();ctx.moveTo(j*w*.2,-h*.23);ctx.lineTo(j*w*.17,-h*.8);ctx.stroke()}ctx.restore()}
+function draw(){
+  ctx.setTransform(canvas.width/W,0,0,canvas.height/H,0,0);ctx.clearRect(0,0,W,H);
+  background();road();city();
+  const scene=[];
+  for(const r of ramps)if(r.z>.02&&r.z<1.15)scene.push({z:r.z,render:()=>ramp(r)});
+  for(const r of traffic)if(r.z>.02&&r.z<1.15)scene.push({z:r.z,render:()=>car(r.x,r.z,r.color,r.model,false,0)});
+  for(const r of wrecks)if(r.z>.02&&r.z<1.15)scene.push({z:r.z,render:()=>car(r.x,r.z,r.color,r.model,false,r.angle)});
+  scene.sort((a,b)=>a.z-b.z);scene.forEach(r=>r.render());
+  const jumping=jump>0?Math.sin((1-jump/1.15)*Math.PI):0;
+  const p=pos(player.x,player.z),shadow=ctx.createRadialGradient(p.x,p.y,1,p.x,p.y,68);shadow.addColorStop(0,'#0008');shadow.addColorStop(1,'#0000');ctx.fillStyle=shadow;ctx.fillRect(p.x-70,p.y-65,140,120);
+  car(player.x,player.z-jumping*.045,'#8ceaf0','Z',true,((keys.right?1:0)-(keys.left?1:0))*.05);
+  if(jumping){ctx.fillStyle='#ffffffd5';ctx.font='900 17px system-ui';ctx.textAlign='center';ctx.fillText('🚀 ПРЫЖОК +90',p.x,p.y-123-jumping*23)}
+  if(flash>0){ctx.fillStyle='rgba(255,42,70,'+(flash*.28)+')';ctx.fillRect(0,0,W,H)}
+  for(const sp of sparks){const q=pos(sp.x,sp.z);ctx.globalAlpha=clamp(sp.life*2,0,1);ctx.fillStyle=sp.col;ctx.fillRect(q.x,q.y,5,5)}ctx.globalAlpha=1;
+  if(mode==='running'){rr(W/2-93,53,186,33,14,'#091c2dc8');ctx.font='bold 17px system-ui';ctx.textAlign='center';ctx.fillStyle='#effcff';ctx.fillText('УРОВЕНЬ '+level+' / 3',W/2,75)}
+}
+function frame(t){const dt=Math.min((t-last)/1000||0,.05);last=t;update(dt);draw();requestAnimationFrame(frame)}
+function resize(){const ratio=Math.min(window.devicePixelRatio||1,2),rect=canvas.getBoundingClientRect();canvas.width=Math.round(rect.width*ratio);canvas.height=Math.round(rect.height*ratio)}
+window.addEventListener('resize',resize);if(window.visualViewport)window.visualViewport.addEventListener('resize',resize);
+const keyMap={ArrowLeft:'left',ArrowRight:'right',ArrowUp:'up',ArrowDown:'down',KeyA:'left',KeyD:'right',KeyW:'up',KeyS:'down',Space:'gas',ShiftLeft:'gas',ShiftRight:'gas',KeyB:'brake'};
+window.addEventListener('keydown',e=>{const k=keyMap[e.code];if(k){e.preventDefault();keys[k]=true}if((e.code==='Enter'||e.code==='Space')&&mode!=='running'){e.preventDefault();begin()}});
+window.addEventListener('keyup',e=>{const k=keyMap[e.code];if(k){e.preventDefault();keys[k]=false}});
+window.addEventListener('blur',release);
+for(const b of document.querySelectorAll('.ctrl')){const k=b.dataset.key;
+ b.addEventListener('pointerdown',e=>{e.preventDefault();try{b.setPointerCapture(e.pointerId)}catch(_){}keys[k]=true;b.classList.add('on')});
+ const end=e=>{e.preventDefault();keys[k]=false;b.classList.remove('on')};
+ b.addEventListener('pointerup',end);b.addEventListener('pointercancel',end);b.addEventListener('lostpointercapture',()=>{keys[k]=false;b.classList.remove('on')});
+}
+$('play').addEventListener('click',begin);
+$('stop').addEventListener('click',()=>{if(mode==='running'){mode='stopped';dialog('⏹️','Гонка остановлена','Пройдено уровней: '+cups+'/3. Очки: '+points+'.','НАЧАТЬ ЗАНОВО ↻')}});
+resize();updateHud();requestAnimationFrame(frame);
+})();
+</script>
+</body></html>
