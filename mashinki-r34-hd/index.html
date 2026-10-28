@@ -1,0 +1,595 @@
+<!doctype html>
+<html lang="ru"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1,user-scalable=no"><meta name="theme-color" content="#173549">
+<title>Skyline GT-R R34 HD — Машинки NEO 3D · 30 секунд</title>
+<style>
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#17384f;color:white;touch-action:none;overscroll-behavior:none;font-family:system-ui,-apple-system,Segoe UI,sans-serif}
+#app{position:fixed;inset:0;overflow:hidden;background:linear-gradient(#82b9d6,#e0e9e1)}#app canvas{width:100%;height:100%;display:block}
+.hud{position:absolute;top:max(6px,env(safe-area-inset-top));left:max(10px,env(safe-area-inset-left));right:max(10px,env(safe-area-inset-right));display:flex;align-items:flex-start;justify-content:space-between;gap:7px;pointer-events:none;text-shadow:0 2px 4px #000a}
+.brand{font-size:clamp(12px,2.3vw,20px);font-weight:1000;letter-spacing:.04em;white-space:nowrap}.brand small{display:block;color:#d2edfc;font-size:9px}
+.metrics{display:flex;gap:5px}.stat{min-width:59px;background:#102a3cd5;border:1px solid #fff6;border-radius:11px;text-align:center;padding:5px 8px;backdrop-filter:blur(5px)}
+.stat small{display:block;font-size:9px;color:#cee7f1;text-transform:uppercase;font-weight:800}.stat b{font-variant-numeric:tabular-nums;font-size:clamp(13px,2.3vw,20px)}
+.awards{border:1px solid #fff7;background:#102b3bd5;border-radius:11px;text-align:center;padding:5px 8px;white-space:nowrap}.awards small{display:block;font-size:9px}.awards span{font-size:19px;filter:grayscale(1);opacity:.20}.awards span.on{filter:none;opacity:1}
+#chase{position:absolute;left:50%;top:56px;transform:translateX(-50%);border:1px solid #b4dced8c;border-radius:11px;background:#112d42d5;padding:5px 15px;font-weight:900;font-size:12px;pointer-events:none;white-space:nowrap}#chase.hot{border-color:#ffb756;color:#ffe7ad}
+.controls{position:absolute;bottom:max(8px,env(safe-area-inset-bottom));left:max(10px,env(safe-area-inset-left));right:max(10px,env(safe-area-inset-right));display:flex;align-items:end;justify-content:space-between;gap:10px;pointer-events:none}.cluster{display:flex;gap:6px;align-items:center;pointer-events:auto}
+.btn{min-width:clamp(54px,8vw,82px);height:clamp(46px,10vh,65px);background:linear-gradient(#28546bec,#0c2c42ef);border:1px solid #d5f2ff99;border-radius:13px;color:#fff;font-size:25px;font-weight:900;touch-action:none;user-select:none;-webkit-user-select:none;cursor:pointer;box-shadow:0 6px 17px #001221aa}.btn:active,.btn.held{background:#4695a9;transform:translateY(2px)}
+.btn.up{background:linear-gradient(#baffdf,#38ce95);color:#10422c;font-size:12px;min-width:82px}.btn.back{background:linear-gradient(#ffb095,#ad454a);font-size:12px;min-width:75px}.btn.nitro{background:linear-gradient(#fff3ad,#e9a23f);color:#453008;font-size:12px;min-width:86px}
+#stop{position:absolute;right:max(10px,env(safe-area-inset-right));bottom:max(84px,env(safe-area-inset-bottom) + 73px);border:1px solid #fff8;border-radius:8px;background:#182b3dda;color:white;padding:6px 11px;font-size:11px;font-weight:900;cursor:pointer}#stop:disabled{opacity:.35}
+#view{position:absolute;right:max(89px,env(safe-area-inset-right) + 79px);
+ bottom:max(84px,env(safe-area-inset-bottom) + 73px);border:1px solid #94eaf9;
+ border-radius:9px;background:#143450e9;color:#e5faff;
+ font-size:11px;font-weight:900;padding:6px 10px;cursor:pointer;z-index:2}
+#drive{position:absolute;left:50%;bottom:max(87px,env(safe-area-inset-bottom) + 75px);transform:translateX(-50%);border:1px solid #bdfffa93;border-radius:11px;background:#112b3adb;padding:6px 14px;white-space:nowrap;font-weight:900;font-size:12px;pointer-events:none}
+#overlay{position:absolute;inset:0;z-index:10;display:flex;align-items:center;justify-content:center;background:#081b2cda;padding:13px}#overlay.hide{display:none}
+.dialog{width:min(470px,87vw);max-height:95%;overflow:auto;border-radius:20px;text-align:center;border:1px solid #b2e9ff91;background:linear-gradient(145deg,#33596ef5,#102839f7);padding:17px 22px;box-shadow:0 14px 40px #000b}
+.dialog .icon{font-size:36px}.dialog h1{font-size:clamp(21px,3.8vw,29px);margin:3px 0 7px}.dialog p{font-size:clamp(11px,1.6vw,15px);line-height:1.43;color:#d8eafa;margin:0 0 12px}
+#play{width:100%;padding:12px 17px;border:0;border-radius:11px;background:linear-gradient(105deg,#b8ffe3,#51d8e9);color:#103b45;font-weight:950;font-size:17px;cursor:pointer}#play:disabled{opacity:.55}
+#rotate{position:absolute;inset:0;z-index:20;display:none;flex-direction:column;align-items:center;justify-content:center;background:linear-gradient(#28556b,#0c273b);padding:24px;text-align:center}#rotate .phone{font-size:70px;animation:turn 1.8s ease-in-out infinite alternate}@keyframes turn{to{transform:rotate(87deg)}}
+@media(orientation:portrait) and (max-width:760px){#rotate{display:flex}}
+@media(max-height:390px){.hud{top:3px}.brand small{display:none}.stat{padding:3px 5px}.stat small{font-size:8px}.awards span{font-size:16px}#chase{top:41px;padding:3px 9px;font-size:11px}.btn{height:45px;border-radius:9px}.controls{bottom:4px}#stop{bottom:60px}#drive{bottom:62px}.dialog{padding:9px 16px}.dialog h1{font-size:19px}.dialog p{font-size:11px;margin-bottom:6px}#play{padding:9px}}
+@media(max-width:790px){.brand{font-size:12px}.stat{min-width:51px;padding:4px}.cluster{gap:4px}.btn{min-width:50px}.btn.up,.btn.back,.btn.nitro{min-width:65px;font-size:11px}}
+</style></head><body><main id="app">
+<header class="hud"><div class="brand">🏎️ SKYLINE R34 HD<small>Bayside Blue · по чертежу кузова</small></div><div class="metrics">
+<div class="stat"><small>Уровень</small><b id="level">1 / 3</b></div><div class="stat"><small>Осталось</small><b id="time">30.0</b></div><div class="stat"><small>Лобовые</small><b id="hits">0 / 3</b></div><div class="stat"><small>км/ч</small><b id="speed">0</b></div>
+</div><div class="awards"><small>КУБКИ</small><span id="cup1">🏆</span><span id="cup2">🏆</span><span id="cup3">🏆</span></div></header>
+<div id="chase">🏁 ГОРОДСКОЙ ЗАЕЗД</div><div id="drive">▲ ВПЕРЁД • ▼ НАЗАД</div><button id="stop" disabled>■ СТОП</button><button id="view" type="button">📷 ОБЗОР АВТО</button>
+<div class="controls"><div class="cluster"><button class="btn" data-key="left">◀</button><button class="btn" data-key="right">▶</button></div><div class="cluster">
+<button class="btn back" data-key="down">▼ НАЗАД</button><button class="btn up" data-key="up">▲ ВПЕРЁД</button><button class="btn nitro" data-key="nitro">⚡ НИТРО</button></div></div>
+<div id="overlay"><div class="dialog"><div class="icon" id="icon">🏁</div><h1 id="title">Машинки NEO 3D</h1>
+<p id="desc">30-секундная гонка на синем Skyline GT-R R34 HD с заводскими пропорциями и деталями по твоему фото: камера позади спорткара, изгибающаяся трасса, красные и зелёные машины, автобус, тоннель и полицейская погоня с мигалками. ▲ — вперёд, ▼ — назад, ◀ ▶ — повороты, ⚡ — нитро. Трамплины поднимают машину над дорогой. Три кубка и три допустимых лобовых столкновения!</p>
+<button id="play" disabled>ЗАГРУЖАЮ 3D…</button></div></div>
+<div id="rotate"><div class="phone">📱</div><h2>Поверни телефон горизонтально</h2><p>Эта 3D-гонка рассчитана на широкий экран.</p></div>
+</main>
+<script>setTimeout(function(){if(!window.neo3dReady){document.getElementById('desc').textContent='Не удалось загрузить 3D-движок. Проверь интернет и поддержку WebGL и обнови страницу.';var b=document.getElementById('play');b.disabled=false;b.textContent='ОБНОВИТЬ СТРАНИЦУ';b.onclick=function(){location.reload()}}},14000)</script>
+<script type="module">
+import * as T from 'https://cdn.jsdelivr.net/npm/three@0.160.1/build/three.module.js';
+const $=id=>document.getElementById(id),keys={left:false,right:false,up:false,down:false,nitro:false};
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v)),rand=(a,b)=>a+Math.random()*(b-a);
+const scene=new T.Scene();scene.background=new T.Color(0x8cbdd6);scene.fog=new T.FogExp2(0x8cbdd6,.005);
+const camera=new T.PerspectiveCamera(67,1,.1,360),renderer=new T.WebGLRenderer({antialias:true,powerPreference:'high-performance'});
+renderer.setPixelRatio(Math.min(devicePixelRatio||1,1.5));renderer.outputColorSpace=T.SRGBColorSpace;
+renderer.toneMapping=T.ACESFilmicToneMapping;renderer.toneMappingExposure=1.48;renderer.shadowMap.enabled=true;renderer.shadowMap.type=T.PCFSoftShadowMap;
+$('app').insertBefore(renderer.domElement,$('app').firstChild);
+const sky=new T.HemisphereLight(0xe3f3ff,0x65885f,2.35);scene.add(sky);
+const sun=new T.DirectionalLight(0xfff0d6,2.75);sun.position.set(-29,48,-37);sun.castShadow=true;
+sun.shadow.mapSize.set(1024,1024);sun.shadow.camera.left=-36;sun.shadow.camera.right=36;sun.shadow.camera.top=36;sun.shadow.camera.bottom=-36;sun.shadow.camera.far=130;sun.shadow.bias=-.00032;scene.add(sun);
+const material=(color,metalness=.08,roughness=.78)=>new T.MeshStandardMaterial({color,metalness,roughness});
+const paint=color=>new T.MeshPhysicalMaterial({color,metalness:.59,roughness:.27,clearcoat:1,clearcoatRoughness:.12});
+const tire=material(0x111820),rim=material(0x9cacb2,.8,.3),windowMat=new T.MeshPhysicalMaterial({color:0x203c50,metalness:.25,roughness:.16,transparent:true,opacity:.95,clearcoat:1});
+const asphalt=material(0x414b54),grass=material(0x5a9564),white=material(0xeaf0e7),dark=material(0x17252e);
+const headLight=new T.MeshStandardMaterial({color:0xdbfbff,emissive:0x9ce8ff,emissiveIntensity:3});
+const redLight=new T.MeshStandardMaterial({color:0xff2644,emissive:0xff1737,emissiveIntensity:3.3});
+const policeBlue=new T.MeshStandardMaterial({color:0x438cff,emissive:0x055aff,emissiveIntensity:3});
+const houseMats=[material(0xc7ad94),material(0x8da9b8),material(0xa6aaa8),material(0xc4b5a5)];
+const leafMats=[material(0x2c7844),material(0x398c54),material(0x66ac68)];
+const LANE=[-7.5,-2.5,2.5,7.5],roadHalf=10;
+function box(group,w,h,d,m,x=0,y=0,z=0,shadow=true){
+ const mesh=new T.Mesh(new T.BoxGeometry(w,h,d),m);mesh.position.set(x,y,z);
+ mesh.castShadow=shadow;mesh.receiveShadow=true;group.add(mesh);return mesh;
+}
+function ball(group,r,m,x,y,z,sx=1,sy=1,sz=1){
+ const mesh=new T.Mesh(new T.SphereGeometry(r,12,9),m);
+ mesh.position.set(x,y,z);mesh.scale.set(sx,sy,sz);mesh.castShadow=true;group.add(mesh);return mesh;
+}
+function wheel(group,x,z,scale=1){
+ const hub=new T.Group();hub.position.set(x,.49*scale,z);group.add(hub);
+ const tyre=new T.Mesh(new T.CylinderGeometry(.48*scale,.48*scale,.30*scale,18),tire);
+ tyre.rotation.z=Math.PI/2;tyre.castShadow=true;hub.add(tyre);
+ const alloy=new T.Mesh(new T.CylinderGeometry(.3*scale,.3*scale,.31*scale,14),rim);
+ alloy.rotation.z=Math.PI/2;hub.add(alloy);
+ return hub;
+}
+function makeCar(color,kind='sport'){
+ const g=new T.Group(),body=paint(color),bus=kind==='bus',suv=kind==='suv',police=kind==='police';
+ if(bus){
+  box(g,3.35,2.45,8.2,body,0,2.0,0);
+  box(g,3.26,.22,8.1,paint(0xcd3938),0,3.36,0);
+  box(g,3.11,1.21,.08,windowMat,0,2.36,-4.16,false);
+  for(const s of [-1,1]){
+   for(let z=-3.15;z<=3.2;z+=1.02)box(g,.06,.96,.8,windowMat,s*1.70,2.46,z,false);
+   for(const z of [-3,1.2,3.0])wheel(g,s*1.74,z,1.15);
+  }
+  box(g,2.76,.16,.11,headLight,0,.98,-4.2,false);
+  box(g,2.76,.14,.10,redLight,0,.96,4.2,false);
+ }else{
+  const w=suv?3.02:3.04,l=suv?6:5.8,roof=suv?2.36:2.05;
+  box(g,w,.81,l,body,0,.96,0);
+  ball(g,.69,body,0,1.17,-l*.44,w*.94,.48,.56);
+  box(g,w*.94,.14,l*.29,body,0,1.4,-l*.32);
+  box(g,w*.82,suv?.85:.64,l*.52,paint(police?0xeef5f5:suv?0x3b5362:color),0,suv?1.93:1.8,.02);
+  box(g,w*.70,.065,l*.37,windowMat,0,roof+.07,-.02,false);
+  for(const side of [-1,1]){
+   box(g,.055,.37,l*.38,windowMat,side*w*.411,roof-.39,.04,false);
+   for(const z of [-l*.32,l*.33])wheel(g,side*(w/2+.045),z);
+   box(g,.2,.13,.30,body,side*(w/2+.13),1.74,-.8);
+   box(g,.08,.085,l*.55,rim,side*(w/2+.01),1.26,0,false);
+  }
+  box(g,w*.82,.19,.085,dark,0,1.17,l/2+.034);
+  box(g,w*.76,.08,.10,redLight,0,1.19,l/2+.10,false);
+  box(g,w*.82,.17,.09,dark,0,1.17,-l/2-.036);
+  box(g,w*.76,.08,.11,headLight,0,1.2,-l/2-.11,false);
+  if(police){
+   box(g,w*.90,.20,l*.28,paint(0x1b3448),0,.98,-l*.16);
+   const l1=box(g,.56,.17,.24,redLight,-.37,roof+.22,0,false);
+   const l2=box(g,.56,.17,.24,policeBlue,.37,roof+.22,0,false);
+   g.userData.beacons=[l1,l2];
+  }else if(!suv){
+   box(g,w*.78,.07,.25,body,0,1.56,l*.47);
+   box(g,w*.46,.15,.06,dark,0,.72,l/2+.035);
+  }
+ }
+ g.userData.type=kind;return g;
+}
+// Custom Three.js Nissan Skyline GT-R R34 inspired by the supplied Bayside Blue reference.
+function makeSkylineR34(){
+ const g=new T.Group();
+ const bayside=new T.MeshPhysicalMaterial({
+   color:0x0a5ce0,metalness:.4,roughness:.19,clearcoat:1,clearcoatRoughness:.11,
+   envMapIntensity:1.25
+ });
+ const deeper=paint(0x083d94),carbon=material(0x131b27,.35,.43),trim=material(0x131a24,.22,.49);
+ const chrome=material(0x89949f,.86,.24),bronze=material(0x5b656c,.86,.30);
+ const lens=new T.MeshPhysicalMaterial({color:0x102535,metalness:.22,roughness:.12,transparent:true,opacity:.85,clearcoat:1,side:T.DoubleSide});
+ const headLens=new T.MeshPhysicalMaterial({color:0xe4f8ff,metalness:.16,roughness:.11,transparent:true,opacity:.91,side:T.DoubleSide});
+ const tailBase=material(0x330d18,.35,.45);
+ const tailLamp=new T.MeshStandardMaterial({color:0xff294b,emissive:0xe80828,emissiveIntensity:3.5});
+ const innerLamp=new T.MeshStandardMaterial({color:0xfb7a78,emissive:0xff3030,emissiveIntensity:2.2});
+ const orange=material(0xffac49,.12,.42);
+ function badge(label,x,y,z,w=.56,h=.20,orient=0){
+   const c=document.createElement('canvas');c.width=512;c.height=160;
+   const cx=c.getContext('2d');cx.clearRect(0,0,512,160);
+   cx.fillStyle='#08131d';cx.fillRect(0,0,512,160);
+   cx.fillStyle='#e2e8f2';cx.font='bold 92px system-ui';cx.textAlign='center';
+   cx.fillText(label,256,113);
+   const tx=new T.CanvasTexture(c);tx.colorSpace=T.SRGBColorSpace;
+   const m=new T.Mesh(new T.PlaneGeometry(w,h),new T.MeshBasicMaterial({map:tx,side:T.DoubleSide}));
+   m.position.set(x,y,z);m.rotation.y=orient;g.add(m);return m;
+ }
+ function panel(corners,mat){
+   const geo=new T.BufferGeometry(),a=[];
+   for(const p of corners)a.push(...p);
+   geo.setAttribute('position',new T.Float32BufferAttribute(a,3));
+   geo.setIndex([0,1,2,0,2,3]);geo.computeVertexNormals();
+   const materialDouble=mat.clone();materialDouble.side=T.DoubleSide;
+   const mesh=new T.Mesh(geo,materialDouble);mesh.castShadow=true;g.add(mesh);
+   return mesh;
+ }
+ // Rounded, slightly tapered coupe silhouette, extruded as real 3D geometry.
+ const outline=new T.Shape();
+ outline.moveTo(-1.29,-2.88);
+ outline.lineTo(-1.48,-2.54);outline.lineTo(-1.48,-1.60);
+ outline.lineTo(-1.54,-1.35);outline.lineTo(-1.51,1.55);
+ outline.lineTo(-1.45,2.43);outline.lineTo(-1.20,2.82);
+ outline.lineTo(1.20,2.82);outline.lineTo(1.45,2.43);
+ outline.lineTo(1.51,1.55);outline.lineTo(1.54,-1.35);
+ outline.lineTo(1.48,-1.60);outline.lineTo(1.48,-2.54);
+ outline.lineTo(1.29,-2.88);outline.closePath();
+ const shellGeo=new T.ExtrudeGeometry(outline,{depth:.67,bevelEnabled:true,bevelSegments:3,
+   steps:1,bevelThickness:.09,bevelSize:.075,curveSegments:10});
+ shellGeo.rotateX(-Math.PI/2);
+ const shell=new T.Mesh(shellGeo,bayside);shell.position.y=.66;shell.castShadow=true;shell.receiveShadow=true;g.add(shell);
+ // R34's strongly defined side sills and chunky front/rear fenders.
+ for(const side of [-1,1]){
+   box(g,.28,.28,4.90,bayside,side*1.39,.82,0);
+   box(g,.33,.17,2.10,deeper,side*1.40,.52,.24);
+   box(g,.13,.13,1.23,trim,side*1.55,.71,.10);
+   box(g,.12,.06,1.08,chrome,side*1.51,1.38,.18,false);
+   // Racing door mirrors.
+   box(g,.44,.22,.49,bayside,side*1.67,1.74,-.83);
+   box(g,.27,.12,.27,trim,side*1.91,1.74,-.86,false);
+   // Wheel arch outline around each real 3D wheel.
+   for(const z of [-1.96,1.94]){
+     const arch=new T.Mesh(new T.TorusGeometry(.64,.075,7,24,Math.PI),
+       new T.MeshStandardMaterial({color:0x0751b0,metalness:.56,roughness:.30}));
+     arch.rotation.y=Math.PI/2;arch.rotation.z=Math.PI;
+     arch.position.set(side*1.48,.59,z);arch.castShadow=true;g.add(arch);
+   }
+ }
+ // Bonnet with R34 hood ridges and aggressive low front edge.
+ box(g,2.48,.12,1.18,bayside,0,1.49,-2.10);
+ for(const side of [-1,1]){
+   const ridge=box(g,.07,.042,1.22,deeper,side*.96,1.55,-2.07,false);
+   ridge.rotation.y=side*.055;
+ }
+ box(g,2.93,.27,.26,deeper,0,.82,-2.83);
+ box(g,2.82,.12,.33,trim,0,.47,-2.91);
+ // Big front intercooler opening and separate side air intakes.
+ box(g,1.51,.37,.055,carbon,0,.77,-3.035,false);
+ for(const side of [-1,1])box(g,.59,.31,.057,trim,side*1.08,.69,-3.023,false);
+ for(let i=0;i<6;i++)box(g,1.38,.025,.056,bronze,0,.63+i*.050,-3.06,false);
+ // Front headlights: wide silver casings with twin projector lenses.
+ for(const side of [-1,1]){
+   box(g,.94,.41,.056,material(0x798a96,.42,.22),side*.98,1.23,-2.965,false);
+   box(g,.84,.32,.058,headLens,side*.98,1.24,-3.003,false);
+   for(const dx of [-.18,.18]){
+     const lamp=new T.Mesh(new T.CircleGeometry(.116,22),headLight);
+     lamp.position.set(side*.98+dx,1.24,-3.047);lamp.rotation.y=Math.PI;g.add(lamp);
+   }
+   box(g,.17,.24,.061,orange,side*1.38,1.22,-2.993,false);
+ }
+ // Recognisable R34 GT-R grille and red badge.
+ box(g,.93,.34,.059,carbon,0,1.04,-3.034,false);
+ badge('GT-R',0,1.075,-3.081,.53,.18,Math.PI);
+ // Coupe greenhouse: steep windscreen, black window seals and visible roof.
+ box(g,2.23,.11,2.14,bayside,0,2.24,.18);
+ box(g,2.31,.18,.13,deeper,0,2.23,-.84);
+ box(g,2.31,.18,.13,deeper,0,2.23,1.17);
+ panel([[-1.08,2.20,-.79],[1.08,2.20,-.79],[1.25,1.49,-1.61],[-1.25,1.49,-1.61]],lens);
+ panel([[1.07,2.20,1.13],[-1.07,2.20,1.13],[-1.27,1.50,1.71],[1.27,1.50,1.71]],lens);
+ // Side windows, two-door profile and slender B pillar.
+ for(const side of [-1,1]){
+   const x=side*1.19,xr=side*1.09;
+   panel([[x,1.58,-1.49],[xr,2.20,-.80],[xr,2.20,.07],[x,1.56,.09]],lens);
+   panel([[x,1.56,.17],[xr,2.20,.13],[xr,2.20,1.08],[x,1.57,1.50]],lens);
+   box(g,.08,.73,.085,bayside,side*1.16,1.87,.11);
+   box(g,.074,.68,.075,trim,side*1.20,1.88,-.81);
+   // Body-coloured side skirt and door handle.
+   box(g,.11,.075,.28,chrome,side*1.49,1.44,.55,false);
+ }
+ // Rear R34 trunk and the famous tall rectangular aftermarket GT wing.
+ box(g,2.73,.22,1.14,bayside,0,1.48,2.19);
+ for(const side of [-1,1]){
+   box(g,.13,.88,.19,trim,side*.99,1.87,2.32);
+   box(g,.36,.055,.28,chrome,side*.99,2.28,2.32);
+ }
+ const wing=box(g,3.14,.16,.47,bayside,0,2.40,2.35);
+ wing.rotation.x=-.075;
+ for(const side of [-1,1]){
+   box(g,.12,.32,.60,deeper,side*1.57,2.39,2.34);
+ }
+ // Signature four circular rear tail lamps: two glowing red rings on EACH side.
+ box(g,2.86,.54,.084,trim,0,1.14,2.94,false);
+ for(const side of [-1,1]){
+   for(const pos of [.61,1.10]){
+     const x=side*pos;
+     const darkDisk=new T.Mesh(new T.CircleGeometry(.225,28),tailBase);
+     darkDisk.position.set(x,1.17,3.000);g.add(darkDisk);
+     const ring=new T.Mesh(new T.TorusGeometry(.174,.048,10,28),tailLamp);
+     ring.position.set(x,1.17,3.025);g.add(ring);
+     const redDisk=new T.Mesh(new T.CircleGeometry(.095,22),innerLamp);
+     redDisk.position.set(x,1.17,3.023);g.add(redDisk);
+   }
+ }
+ // Bright plate and Skyline and GT-R markings visible in chase-camera view.
+ box(g,.91,.27,.06,material(0xe2e8e9),0,.98,3.023,false);
+ badge('R34',0,.99,3.074,.66,.18);
+ badge('SKYLINE',0,1.50,2.986,.86,.16);
+ badge('GT-R',.89,1.51,2.986,.50,.17);
+ box(g,2.70,.31,.13,trim,0,.59,2.94);
+ for(let i=0;i<5;i++)box(g,2.25,.025,.075,bronze,0,.48+i*.048,3.028,false);
+ // Big polished racing exhaust on the right side.
+ const exhaust=new T.Mesh(new T.CylinderGeometry(.175,.175,.46,20),chrome);
+ exhaust.rotation.x=Math.PI/2;exhaust.position.set(.97,.49,3.08);exhaust.castShadow=true;g.add(exhaust);
+ const exhaustHole=new T.Mesh(new T.CircleGeometry(.122,20),carbon);
+ exhaustHole.position.set(.97,.49,3.32);g.add(exhaustHole);
+ // Deep graphite multi-spoke alloy wheels: rotated 90° to face the viewer from sides.
+ for(const side of [-1,1]){
+   for(const z of [-1.96,1.94]){
+     const assembly=new T.Group();
+     assembly.position.set(side*1.59,.51,z);g.add(assembly);
+     const tyreMesh=new T.Mesh(new T.CylinderGeometry(.55,.55,.38,26),tire);
+     tyreMesh.rotation.z=Math.PI/2;tyreMesh.castShadow=true;assembly.add(tyreMesh);
+     const hubSide=new T.Group();hubSide.position.x=side*.205;assembly.add(hubSide);
+     const disk=new T.Mesh(new T.CylinderGeometry(.39,.39,.024,25),carbon);
+     disk.rotation.z=Math.PI/2;hubSide.add(disk);
+     for(let i=0;i<5;i++){
+       const a=i*Math.PI*2/5;
+       const spoke=new T.Mesh(new T.BoxGeometry(.055,.11,.43),bronze);
+       spoke.position.set(side*.03,Math.sin(a)*.19,Math.cos(a)*.19);
+       spoke.rotation.x=-a;hubSide.add(spoke);
+     }
+     const cap=new T.Mesh(new T.CylinderGeometry(.095,.095,.055,16),chrome);
+     cap.rotation.z=Math.PI/2;cap.position.x=side*.055;hubSide.add(cap);
+   }
+ }
+ // Blueprint-guided detailing: the square-edged Nissan R34 two-door profile.
+ const seam=material(0x092e6e,.48,.31);
+ const highlight=new T.MeshStandardMaterial({color:0xb6e3ff,metalness:.52,roughness:.18,transparent:true,opacity:.58});
+ const darkRed=material(0x3a1018,.37,.42);
+ function seamLine(points,rad,mat){
+   const curve=new T.CatmullRomCurve3(points.map(p=>new T.Vector3(...p)));
+   const mesh=new T.Mesh(new T.TubeGeometry(curve,20,rad,5,false),mat);
+   mesh.castShadow=false;g.add(mesh);
+ }
+ for(const side of [-1,1]){
+   // Continuous shoulder crease across the front wing, door and rear quarter.
+   seamLine([[side*1.50,1.48,-1.35],[side*1.52,1.49,-.25],
+     [side*1.51,1.48,.75],[side*1.46,1.44,1.98]],.022,highlight);
+   // Long two-door seam and lower front edge.
+   seamLine([[side*1.51,1.32,.84],[side*1.53,1.15,.85],
+     [side*1.54,.73,.88]],.014,seam);
+   seamLine([[side*1.51,1.32,-1.32],[side*1.53,1.10,-1.37],
+     [side*1.53,.74,-1.40]],.013,seam);
+   box(g,.085,.15,2.38,deeper,side*1.54,.66,-.03,false);
+   box(g,.17,.10,.33,chrome,side*1.54,1.42,.50,false);
+   box(g,.048,.11,.16,orange,side*1.57,1.31,-1.29,false);
+   // Thin metallic bonnet creases visible in the reference's 3/4 front view.
+   seamLine([[side*.94,1.57,-2.72],[side*.98,1.57,-2.23],
+     [side*.96,1.57,-1.68]],.012,highlight);
+   // Silver window trim and the steep front windscreen surround.
+   seamLine([[side*1.21,1.61,-1.46],[side*1.09,2.21,-.81],
+     [side*1.09,2.24,.07]],.015,chrome);
+ }
+ // Rectangular aggressive R34 aero: intercooler lip, black deep front splitter.
+ box(g,2.69,.07,.31,carbon,0,.41,-2.99);
+ for(const side of [-1,1])box(g,.12,.19,.27,deeper,side*1.40,.63,-2.82,false);
+ // Right rear twin diffuser vents match the blue photo's aftermarket bodywork.
+ for(const side of [-1,1]){
+   box(g,.76,.060,.086,deeper,side*.89,.64,3.11,false);
+   box(g,.67,.06,.087,darkRed,side*.89,.56,3.16,false);
+ }
+ // Two windscreen wipers, sculpted rather than drawn on glass.
+ for(const side of [-1,1]){
+   const wiper=box(g,.68,.025,.034,seam,side*.43,1.55,-1.60,false);
+   wiper.rotation.y=-side*.32;
+ }
+ // Reference R34 factory dimensions 4600 x 1785 x 1360 mm, wheelbase 2665 mm.
+ // Existing generic mesh was too wide and short: correct aspect ratios here.
+ g.scale.set(.85,.96,1.25);
+ g.userData.dimensionsMM={length:4600,width:1785,height:1360,wheelbase:2665};
+ g.userData.paint='Bayside Blue cobalt metallic';
+ g.userData.type='skyline-r34-hd';
+ return g;
+}
+const player=makeSkylineR34();scene.add(player);
+const carCoolFill=new T.DirectionalLight(0x9edaff,1.05);
+carCoolFill.position.set(11,14,8);scene.add(carCoolFill);
+const carWarmFill=new T.DirectionalLight(0xffebd4,.68);
+carWarmFill.position.set(-12,11,-12);scene.add(carWarmFill);
+const shadow=new T.Mesh(new T.CircleGeometry(2.1,26),new T.MeshBasicMaterial({color:0x0b1c24,transparent:true,opacity:.38,depthWrite:false}));
+shadow.rotation.x=-Math.PI/2;shadow.position.y=.078;scene.add(shadow);
+const nitroFlames=[];
+for(const x of [-.67,.67]){
+ const flame=new T.Mesh(new T.ConeGeometry(.21,1.25,9),new T.MeshBasicMaterial({color:0x4abfff,transparent:true,opacity:.9,depthWrite:false}));
+ flame.rotation.x=Math.PI/2;flame.position.set(x,.64,3.13);player.add(flame);nitroFlames.push(flame);
+}
+const ground=new T.Mesh(new T.PlaneGeometry(690,680),grass);
+ground.rotation.x=-Math.PI/2;ground.position.z=-110;ground.receiveShadow=true;scene.add(ground);
+const MIN_Z=-240,MAX_Z=42,N=96;
+const roadGeo=new T.BufferGeometry(),verts=new Float32Array((N+1)*6),triangles=[];
+for(let i=0;i<N;i++){const j=i*2;triangles.push(j,j+1,j+2,j+1,j+3,j+2)}
+roadGeo.setAttribute('position',new T.BufferAttribute(verts,3));roadGeo.setIndex(triangles);
+const road=new T.Mesh(roadGeo,asphalt);road.receiveShadow=true;road.frustumCulled=false;scene.add(road);
+const lanes=[];
+for(const xx of [-10,-5,0,5,10])for(let i=0;i<30;i++){
+ const edge=Math.abs(xx)===10;
+ const obj=box(scene,edge?.13:.16,.022,edge?11:5.8,edge?white:white,0,.055,0,false);
+ lanes.push({obj,xx,i,edge});
+}
+function bend(s){return 4.4*Math.sin(s*.009)+2.2*Math.sin((s+36)*.019)+1.5*Math.sin(s*.031)}
+function bendAngle(s){const d=.5;return Math.atan2(bend(s+d)-bend(s-d),2*d)}
+function roadUpdate(d){
+ for(let i=0;i<=N;i++){
+  const z=MIN_Z+(MAX_Z-MIN_Z)*i/N,x=bend(d-z),a=i*6;
+  verts[a]=x-roadHalf;verts[a+1]=.019;verts[a+2]=z;
+  verts[a+3]=x+roadHalf;verts[a+4]=.019;verts[a+5]=z;
+ }
+ roadGeo.attributes.position.needsUpdate=true;roadGeo.computeVertexNormals();
+ for(const t of lanes){
+  const step=t.edge?13:10,z=35+((d%step+step)%step)-t.i*step;
+  t.obj.position.set(bend(d-z)+t.xx,.058,z);
+  t.obj.rotation.y=-bendAngle(d-z);
+  t.obj.visible=z>MIN_Z&&z<MAX_Z;
+ }
+}
+function makeTree(){
+ const g=new T.Group(),bark=material(0x70593d);
+ const stem=new T.Mesh(new T.CylinderGeometry(.18,.29,2.35,7),bark);
+ stem.position.y=1.2;stem.castShadow=true;g.add(stem);
+ ball(g,1.24,leafMats[Math.floor(rand(0,leafMats.length))],-.4,3.1,0);
+ ball(g,1.3,leafMats[Math.floor(rand(0,leafMats.length))],.52,3.3,.3);
+ ball(g,.88,leafMats[Math.floor(rand(0,leafMats.length))],.05,4.04,-.3);
+ return g;
+}
+function makeHouse(){
+ const g=new T.Group(),w=rand(6,10),h=rand(9,19),d=rand(7,11);
+ box(g,w,h,d,houseMats[Math.floor(rand(0,houseMats.length))],0,h/2,0);
+ box(g,w+.2,.23,d+.2,material(0x576d79),0,h+.06,0);
+ const win=material(0xa9d9df,.2,.45);
+ for(let y=3;y<h-2;y+=3.2)for(let x=-w*.28;x<=w*.28;x+=w*.26){
+  box(g,1.13,1.25,.06,win,x,y,d/2+.045,false);
+ }
+ return g;
+}
+function makeParking(){
+ const g=new T.Group();box(g,12,.11,18,material(0x6c7880),0,.08,0,false);
+ for(const x of [-3.2,3.2])for(const z of [-5,2,6]){
+  const c=makeCar([0xcbdde1,0xe4a989,0xa4bdad][Math.floor(rand(0,3))]);
+  c.scale.setScalar(.62);c.position.set(x,.13,z);g.add(c);
+  box(g,.10,.022,5,white,x+2.3,.155,z,false);
+ }
+ return g;
+}
+const scenery=[];
+for(let i=0;i<67;i++){
+ const obj=i%8===3?makeHouse():i%11===7?makeParking():makeTree();
+ const side=i%2?-1:1,off=obj.children.length>8?25:17+rand(0,8);
+ obj.userData.side=side;obj.userData.off=off;obj.position.set(side*off,0,39-i*5.0);
+ scene.add(obj);scenery.push(obj);
+}
+function makeTunnel(){
+ const g=new T.Group(),stone=material(0x848479),moss=material(0x4c8357);
+ for(let i=0;i<5;i++){
+  const z=-i*5.2;
+  for(const side of [-1,1]){
+   box(g,2.1,7,3.7,stone,side*11.9,3.5,z);
+   box(g,2.35,.4,3.8,moss,side*11.9,7.13,z);
+  }
+  const arch=new T.Mesh(new T.TorusGeometry(11.8,1.2,9,32,Math.PI),stone);
+  arch.position.set(0,6.0,z);arch.castShadow=true;g.add(arch);
+  box(g,23,.95,3.7,stone,0,11.5,z);
+ }
+ return g;
+}
+const tunnels=[makeTunnel(),makeTunnel()];tunnels[0].position.z=-150;tunnels[1].position.z=-345;tunnels.forEach(g=>scene.add(g));
+let mode='ready',elapsed=0,level=1,cups=0,frontHits=0,points=0,speed=0,distance=0,lateral=0,height=0,vY=0,grace=0,flash=0;
+let rivalTime=.7,rampTime=2.3,policeTime=3.0,policeHits=0,lastFrame=0;
+let photoView=0;
+const rivals=[],ramps=[],cops=[];
+const colors=[0x8dce53,0xec4244,0xe9ddc7,0x589ac1,0xf6eade,0xb98fb6];
+function clearEntities(){
+ for(const list of [rivals,ramps,cops]){for(const v of list)scene.remove(v.mesh);list.length=0;}
+}
+function spawnRival(){
+ const kind=Math.random()<.17?'bus':Math.random()<.4?'suv':'sport';
+ const color=kind==='bus'?0xdc3a36:colors[Math.floor(rand(0,colors.length))];
+ const mesh=makeCar(color,kind);scene.add(mesh);
+ rivals.push({mesh,x:LANE[Math.floor(rand(0,LANE.length))],z:-155,v:rand(12,19),counted:false});
+}
+function spawnRamp(){
+ const g=new T.Group(),orange=material(0xe3a44c),light=material(0xffe29a);
+ box(g,3.1,.4,5.5,orange,0,.34,0);
+ const top=box(g,3.1,.35,5.5,light,0,1.0,0);top.rotation.x=-.22;
+ for(const x of [-1,0,1])box(g,.19,.035,5.2,material(0x704a2b),x,1.23,0,false);
+ scene.add(g);ramps.push({mesh:g,x:LANE[Math.floor(rand(0,LANE.length))],z:-147});
+}
+function spawnCop(blockade=false){
+ const mesh=makeCar(0xf1f5f8,'police');scene.add(mesh);
+ cops.push({mesh,x:LANE[Math.floor(rand(0,LANE.length))],z:blockade?-143:27,blockade,t:0});
+}
+function buttonsReleased(){for(const k in keys)keys[k]=false;document.querySelectorAll('.btn').forEach(b=>b.classList.remove('held'))}
+function hud(){
+ $('level').textContent=level+' / 3';$('time').textContent=Math.max(0,30-elapsed).toFixed(1);$('hits').textContent=frontHits+' / 3';$('speed').textContent=Math.max(0,Math.round(speed*3.6));
+ for(let n=1;n<=3;n++)$('cup'+n).classList.toggle('on',n<=cups);
+ $('chase').textContent=elapsed<10?'🏁 ГОРОДСКАЯ ГОНКА':elapsed<20?'🚔 ПОЛИЦИЯ ★★☆':'🚨 ПОЛИЦИЯ ★★★';
+ $('chase').classList.toggle('hot',elapsed>=10);
+ $('drive').textContent=height>.15?'🚀 В ПОЛЁТЕ':keys.down?'▼ ЗАДНИЙ ХОД':keys.nitro?'⚡ НИТРО':keys.up?'▲ ВПЕРЁД':'▲ НАЖМИ «ВПЕРЁД»';
+}
+function show(icon,title,desc,button){
+ $('icon').textContent=icon;$('title').textContent=title;$('desc').textContent=desc;$('play').textContent=button;
+ $('overlay').classList.remove('hide');$('stop').disabled=true;buttonsReleased();hud();
+}
+function reset(){
+ clearEntities();mode='running';elapsed=0;level=1;cups=0;frontHits=0;points=0;speed=0;distance=0;lateral=0;height=0;vY=0;grace=0;flash=0;
+ rivalTime=.7;rampTime=2;policeTime=2.0;policeHits=0;
+ player.position.set(bend(0),0,0);buttonsReleased();$('stop').disabled=false;$('overlay').classList.add('hide');hud();
+}
+function finish(win){
+ mode=win?'won':'lost';
+ show(win?'🏆':'💥',win?'ПОБЕДА! ТРИ КУБКА!':'ТРЕТЬЕ ЛОБОВОЕ СТОЛКНОВЕНИЕ',
+ win?'Ты прошёл все 30 секунд и получил три кубка 🏆🏆🏆! Очки: '+points+'.':'Заезд окончен. Кубки: '+cups+'/3. Очки: '+points+'.','ИГРАТЬ ЕЩЁ РАЗ ↻');
+}
+function collide(v,police=false){
+ if(grace>0||height>.75)return;
+ const diff=Math.abs(v.mesh.position.x-player.position.x);
+ if(diff>1.45){
+  points+=50;v.mesh.rotation.z=(v.mesh.position.x>player.position.x?-1:1)*.5;
+ }else if(police&&!v.blockade){
+  speed*=.55;policeHits++;flash=.22;
+ }else{
+  frontHits++;speed*=.4;flash=.42;
+  if(frontHits>=3)finish(false);
+ }
+ grace=1.12;hud();
+}
+function update(dt){
+ if(mode!=='running')return;
+ elapsed+=dt;
+ if(elapsed>=30){elapsed=30;level=3;cups=3;finish(true);return}
+ const targetLevel=elapsed<10?1:elapsed<20?2:3;
+ if(targetLevel!==level){level=targetLevel;cups=level-1;points+=250}
+ const fwd=keys.up,back=keys.down;
+ if(fwd)speed+=(keys.nitro?47:35)*dt;
+ else if(back)speed-=55*dt;
+ else speed-=Math.sign(speed)*Math.min(Math.abs(speed),13*dt);
+ speed=clamp(speed,-17,keys.nitro?77:57);
+ const turn=(keys.right?1:0)-(keys.left?1:0);
+ lateral=clamp(lateral+turn*dt*(6.1+Math.abs(speed)*.11),-9.3,9.3);
+ distance+=speed*dt;
+ const path=bend(distance),worldX=path+lateral;
+ player.position.set(worldX,height,0);
+ player.rotation.y=-bendAngle(distance)+turn*.07;
+ player.rotation.z+=(turn*-.065-player.rotation.z)*Math.min(1,dt*8);
+ if(height>0||vY>0){vY-=27*dt;height+=vY*dt;if(height<0){height=0;vY=0;flash=.09}}
+ const sh=shadow;sh.position.set(worldX,.07,0);sh.scale.setScalar(1+height*.25);sh.material.opacity=height>.2?.18:.36;
+ for(const flame of nitroFlames){flame.visible=keys.nitro&&speed>7;flame.scale.y=rand(.6,1.4)}
+ grace=Math.max(0,grace-dt);flash=Math.max(0,flash-dt);
+ rivalTime-=dt;if(rivalTime<=0){spawnRival();rivalTime=rand(.92,1.37)-level*.12}
+ rampTime-=dt;if(rampTime<=0){spawnRamp();rampTime=rand(4.5,6.0)}
+ policeTime-=dt;if(elapsed>10&&policeTime<=0){spawnCop(level===3&&Math.random()<.38);policeTime=rand(5.5,7.1)}
+ for(let i=rivals.length-1;i>=0;i--){
+  const r=rivals[i];r.z+=(speed+r.v)*dt;
+  r.mesh.position.set(bend(distance-r.z)+r.x,0,r.z);r.mesh.rotation.y=Math.PI-bendAngle(distance-r.z);
+  if(Math.abs(r.z)<3.3&&Math.abs(r.mesh.position.x-worldX)<3.1){collide(r);scene.remove(r.mesh);rivals.splice(i,1);continue}
+  if(!r.counted&&r.z>4){r.counted=true;points+=15}
+  if(r.z>45){scene.remove(r.mesh);rivals.splice(i,1)}
+ }
+ for(let i=ramps.length-1;i>=0;i--){
+  const r=ramps[i];r.z+=speed*dt;r.mesh.position.set(bend(distance-r.z)+r.x,0,r.z);r.mesh.rotation.y=-bendAngle(distance-r.z);
+  if(Math.abs(r.z)<3.1&&Math.abs(r.mesh.position.x-worldX)<2.45&&height===0){
+   height=.05;vY=15.5;points+=120;scene.remove(r.mesh);ramps.splice(i,1);continue;
+  }
+  if(r.z>45){scene.remove(r.mesh);ramps.splice(i,1)}
+ }
+ for(let i=cops.length-1;i>=0;i--){
+  const c=cops[i];c.t+=dt;
+  if(c.blockade){c.z+=(speed+12)*dt;c.mesh.position.set(bend(distance-c.z)+c.x,0,c.z);c.mesh.rotation.y=Math.PI-bendAngle(distance-c.z)}
+  else{
+   c.z-=Math.max(9,11+speed*.13)*dt;c.x+=(lateral-c.x)*Math.min(1,dt*.8);
+   c.mesh.position.set(bend(distance-c.z)+c.x,0,c.z);c.mesh.rotation.y=-bendAngle(distance-c.z);
+  }
+  for(let j=0;j<(c.mesh.userData.beacons||[]).length;j++){
+   const b=c.mesh.userData.beacons[j];b.material.emissiveIntensity=(Math.floor(c.t*7+j)%2===0)?6:.8;
+  }
+  if(Math.abs(c.z)<3.2&&Math.abs(c.mesh.position.x-worldX)<3.1){
+   collide(c,true);scene.remove(c.mesh);cops.splice(i,1);continue;
+  }
+  if(c.z>43||c.z< -215){scene.remove(c.mesh);cops.splice(i,1)}
+ }
+ roadUpdate(distance);
+ for(const g of scenery){
+  g.position.z+=speed*dt;
+  if(g.position.z>45)g.position.z-=332;
+  else if(g.position.z< -290)g.position.z+=332;
+  g.position.x=bend(distance-g.position.z)+g.userData.side*g.userData.off;
+ }
+ for(const tunnel of tunnels){
+  tunnel.position.z+=speed*dt;
+  if(tunnel.position.z>42)tunnel.position.z-=355;
+  if(tunnel.position.z< -370)tunnel.position.z+=355;
+  tunnel.position.x=bend(distance-tunnel.position.z);
+  tunnel.rotation.y=-bendAngle(distance-tunnel.position.z);
+ }
+ let look=new T.Vector3(bend(distance+35)+lateral*.52,1.65,-31);
+ let desired=new T.Vector3(path+lateral*.68,5.55+height*.12,12.3);
+ if(photoView===1){
+   desired=new T.Vector3(worldX-8.4,4.1+height,-9.1);
+   look=new T.Vector3(worldX,1.35+height,0);
+ }else if(photoView===2){
+   desired=new T.Vector3(worldX+8.4,4.3+height,9.9);
+   look=new T.Vector3(worldX,1.37+height,0);
+ }
+ camera.position.lerp(desired,Math.min(1,dt*5));camera.lookAt(look);
+ const skyColor=level===3?0x91a7c4:level===2?0xa9c0d6:0x8cbdd6;
+ scene.background.setHex(skyColor);scene.fog.color.setHex(skyColor);
+ hud();
+}
+const keymap={ArrowLeft:'left',ArrowRight:'right',ArrowUp:'up',ArrowDown:'down',KeyA:'left',KeyD:'right',KeyW:'up',KeyS:'down',Space:'nitro',ShiftLeft:'nitro',ShiftRight:'nitro'};
+for(const button of document.querySelectorAll('.btn')){
+ const name=button.dataset.key;
+ button.addEventListener('pointerdown',ev=>{ev.preventDefault();try{button.setPointerCapture(ev.pointerId)}catch(_){}keys[name]=true;button.classList.add('held')});
+ const end=ev=>{ev.preventDefault();keys[name]=false;button.classList.remove('held')};
+ button.addEventListener('pointerup',end);button.addEventListener('pointercancel',end);
+ button.addEventListener('lostpointercapture',()=>{keys[name]=false;button.classList.remove('held')});
+}
+window.addEventListener('keydown',ev=>{const name=keymap[ev.code];if(name){ev.preventDefault();keys[name]=true}
+ if((ev.code==='Enter'||ev.code==='Space')&&mode!=='running'){ev.preventDefault();reset()}});
+window.addEventListener('keyup',ev=>{const name=keymap[ev.code];if(name){ev.preventDefault();keys[name]=false}});
+window.addEventListener('blur',buttonsReleased);
+$('view').addEventListener('click',()=>{
+ photoView=(photoView+1)%3;
+ $('view').textContent=photoView===0?'📷 ОБЗОР АВТО':photoView===1?'📷 ЗАДНИЙ ВИД':'🏎️ ГОНКА';
+});
+$('play').addEventListener('click',reset);
+$('stop').addEventListener('click',()=>{if(mode==='running'){mode='stopped';show('⏹️','ЗАЕЗД ОСТАНОВЛЕН','Время: '+elapsed.toFixed(1)+' сек. Кубки: '+cups+'/3. Очки: '+points+'.','НАЧАТЬ ЗАНОВО ↻')}});
+function resize(){camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight)}
+window.addEventListener('resize',resize);
+if(window.visualViewport)window.visualViewport.addEventListener('resize',resize);
+resize();roadUpdate(0);player.position.set(bend(0),0,0);
+camera.position.set(bend(0),5.55,12.3);camera.lookAt(bend(35),1.65,-31);
+window.neo3dReady=true;$('play').disabled=false;$('play').textContent='🏁 НАЧАТЬ ЗАЕЗД';hud();
+let previous=0;
+function frame(now){requestAnimationFrame(frame);const dt=Math.min(.043,(now-previous)/1000||0);previous=now;update(dt);
+ renderer.toneMappingExposure=1.48+flash*.33;renderer.render(scene,camera)}
+requestAnimationFrame(frame);
+</script></main></body></html>
