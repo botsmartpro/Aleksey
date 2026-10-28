@@ -1,0 +1,344 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#101522" />
+  <title>Машинки — 30 секунд · iPhone и компьютер</title>
+  <style>
+    :root { color-scheme: dark; --bg:#101522; --panel:#1a2334; --light:#ecf6ff; --muted:#a4b5d1; --aqua:#58f1d2; --hot:#ffbd5a; }
+    * { box-sizing:border-box; }
+    html, body { margin:0; min-height:100%; background:radial-gradient(circle at 50% -10%,#273953 0,#111725 55%,#0b101b 100%); font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; color:var(--light); }
+    body { display:flex; justify-content:center; overscroll-behavior:none; }
+    .app { width:min(100%,480px); padding:13px 15px max(15px,env(safe-area-inset-bottom)); display:flex; flex-direction:column; gap:11px; }
+    header { display:flex; justify-content:space-between; align-items:flex-end; gap:10px; }
+    h1 { margin:0; font-weight:900; font-size:clamp(20px,5.7vw,26px); letter-spacing:-.8px; line-height:1.15; }
+    .subtitle { color:var(--muted); font-size:11px; margin-top:3px; font-weight:650; letter-spacing:.11em; text-transform:uppercase; }
+    .record { text-align:right; padding:7px 10px; border:1px solid #38465b; border-radius:12px; min-width:90px; background:rgba(255,255,255,.04); }
+    .record b { display:block; font-size:18px; color:var(--hot); }
+    .record small { color:var(--muted); font-size:10px; text-transform:uppercase; letter-spacing:.1em; }
+    .stats { display:grid; grid-template-columns:1fr 1fr 1fr; gap:7px; }
+    .stat { border-radius:12px; padding:8px 10px; background:#1d293b; border:1px solid #2f415b; }
+    .stat small { display:block; font-size:10px; font-weight:700; text-transform:uppercase; color:var(--muted); letter-spacing:.08em; }
+    .stat strong { display:block; font-size:21px; line-height:1.12; font-variant-numeric:tabular-nums; }
+    .stat.time strong { color:var(--aqua); }
+    .screen { width:100%; position:relative; overflow:hidden; border:2px solid #344b64; border-radius:19px; box-shadow:0 20px 50px #0007,0 0 0 3px #131c2a; background:#273447; }
+    canvas { display:block; width:100%; aspect-ratio:420/640; touch-action:none; }
+    .overlay { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; background:linear-gradient(#0e16248c,#0b1323d9); padding:17px; transition:opacity .18s; }
+    .overlay.hidden { opacity:0; pointer-events:none; }
+    .dialog { width:min(100%,330px); padding:24px 20px; text-align:center; background:linear-gradient(145deg,#26374fee,#121a2df5); border:1px solid #5f7798; border-radius:22px; box-shadow:0 16px 60px #0008; }
+    .emoji { font-size:42px; line-height:1; margin-bottom:12px; }
+    .dialog h2 { font-size:25px; line-height:1.12; letter-spacing:-.6px; margin:0 0 10px; }
+    .dialog p { margin:0 0 18px; color:#c8d6eb; font-size:14px; line-height:1.45; }
+    .play { cursor:pointer; width:100%; border:0; border-radius:13px; background:linear-gradient(100deg,#67f9d8,#34c1d4); color:#082a36; font-weight:900; font-size:17px; padding:14px 18px; box-shadow:0 6px 22px #2beec044; }
+    .play:active { transform:translateY(1px); }
+    .controls { display:grid; grid-template-columns:1fr 1fr .72fr 1fr 1.2fr; gap:7px; height:63px; }
+    .control { user-select:none; -webkit-user-select:none; -webkit-touch-callout:none; touch-action:none; border:1px solid #3c5677; background:linear-gradient(#2a3b51,#202c3e); border-radius:12px; color:#e5f7ff; font-size:26px; font-weight:800; cursor:pointer; box-shadow:0 3px 0 #0a111d; }
+    .control:active, .control.pressed { background:#457a88; transform:translateY(2px); box-shadow:0 1px 0 #0a111d; }
+    .control.boost { font-size:13px; letter-spacing:.05em; background:linear-gradient(#ffd272,#f49b3f); border-color:#efbb56; color:#382100; }
+    .control.boost.pressed { background:#ffe28a; }
+    .stop {background:#512e3a; border:1px solid #e28c95; color:#ffeaec; padding:8px 14px; border-radius:10px; font-size:13px; font-weight:800; cursor:pointer; touch-action:manipulation;}
+    .stop:active {background:#79404c;}
+    .stop:disabled {opacity:.42;cursor:default;}
+    .meta { display:flex; align-items:center; justify-content:space-between; gap:8px; color:var(--muted); font-size:11px; padding:0 3px; }
+    .charge { display:flex; gap:7px; align-items:center; flex:1; max-width:210px; }
+    .meter { flex:1; background:#334056; height:7px; border-radius:20px; overflow:hidden; }
+    .meter span { display:block; height:100%; width:100%; background:linear-gradient(90deg,#ffad4c,#fff187); border-radius:20px; transition:width .1s linear; }
+    #soundBtn { padding:4px 7px; background:transparent; color:#c7d5e6; border:1px solid #42516b; border-radius:7px; font-size:11px; cursor:pointer; }
+    .hint { font-size:11px; color:#94a8c4; text-align:center; padding:0 3px; }
+    .noscript { background:#58323a; color:#fff2df; padding:15px; border-radius:12px; margin:12px 0; }
+    /* Keep the entire game, especially touch controls, visible on an iPhone. */
+    @media(max-width:600px) and (orientation:portrait) {
+      html,body { height:100%; overflow:hidden; }
+      .app {
+        height:100vh; height:100dvh; min-height:0;
+        gap:7px; padding: max(8px,env(safe-area-inset-top)) 11px max(8px,env(safe-area-inset-bottom));
+      }
+      header,.stats,.meta { flex-shrink:0; }
+      .screen { flex:1 1 auto; min-height:0; }
+      canvas { height:100%; width:100%; aspect-ratio:auto; }
+      .controls { height:56px; flex:0 0 56px; gap:5px; }
+      .control { border-radius:10px; }
+      .hint { display:none; }
+      .meta { min-height:30px; }
+      .stat {padding:7px 8px;}
+      .stat strong {font-size:19px;}
+    }
+    @media(max-height:700px) and (max-width:600px) and (orientation:portrait) {
+      .app {gap:5px;}
+      h1 {font-size:19px;}
+      .subtitle {font-size:9px;}
+      .record {padding:4px 7px;}
+      .stats .stat {padding:5px 7px;}
+      .stat small {font-size:9px;}
+      .stat strong {font-size:17px;}
+      .controls {height:52px;flex-basis:52px;}
+      .meta {min-height:28px;}
+    }
+    @media (min-width:601px) and (max-height:1000px) {
+      html,body { height:100%; }
+      .app { height:100vh; height:100dvh; min-height:0; gap:7px; padding-top:8px; padding-bottom:8px; }
+      .screen {flex:1 1 auto; min-height:0;}
+      canvas {height:100%; width:100%; aspect-ratio:auto;}
+      .controls { height:53px; flex:0 0 53px; }
+      .hint {display:none;}
+      .meta {flex-shrink:0;}
+    }
+    @media(max-height:760px) and (min-width:601px) { .stat strong {font-size:18px} }
+
+  </style>
+</head>
+<body>
+  <main class="app">
+    <noscript><div class="noscript">Для игры нужен JavaScript. Если кнопка «Начать заезд» не работает, открой игру по обычной ссылке на сайте, а не в предпросмотре скачанного HTML-файла.</div></noscript>
+    <header>
+      <div><h1>🏎️ Встречная полоса</h1><div class="subtitle">Аркадная гонка · 30 секунд</div></div>
+      <div class="record"><small>Рекорд</small><b id="best">0</b></div>
+    </header>
+    <div class="stats" aria-live="off">
+      <div class="stat time"><small>Осталось</small><strong><span id="time">30.0</span> с</strong></div>
+      <div class="stat"><small>Обогнал</small><strong id="passed">0</strong></div>
+      <div class="stat"><small>Скорость</small><strong><span id="speed">90</span> <span style="font-size:11px">км/ч</span></strong></div>
+    </div>
+    <div class="screen">
+      <canvas id="game" width="840" height="1280" aria-label="Игровая трасса с машинками"></canvas>
+      <div class="overlay" id="overlay">
+        <div class="dialog">
+          <div class="emoji" id="icon">🏁</div>
+          <h2 id="title">Продержись 30 секунд!</h2>
+          <p id="desc">Объезжай встречные машины. Одно столкновение — и заезд окончен. Ускорение приносит больше очков.</p>
+          <button class="play" id="start">Начать заезд →</button>
+        </div>
+      </div>
+    </div>
+    <div class="controls" aria-label="Управление автомобилем">
+      <button class="control" data-key="left" aria-label="Влево">◀</button>
+      <button class="control" data-key="down" aria-label="Назад">▼</button>
+      <button class="control" data-key="up" aria-label="Вперёд">▲</button>
+      <button class="control" data-key="right" aria-label="Вправо">▶</button>
+      <button class="control boost" data-key="boost" aria-label="Ускорение">⚡ ГАЗ</button>
+    </div>
+    <div class="meta"><button class="stop" type="button" id="stop" disabled>■ Стоп</button><div class="charge"><span>УСКОРЕНИЕ</span><div class="meter"><span id="energy"></span></div></div><button id="soundBtn" aria-label="Переключить звуки">🔊 Звук</button></div>
+    <div class="hint">Компьютер: ← → ↑ ↓ или WASD, пробел — ускорение · Телефон: кнопки снизу · «Стоп» завершает заезд</div>
+  </main>
+  <script>
+    (() => {
+      'use strict';
+      const c = document.getElementById('game');
+      const ctx = c.getContext('2d');
+      // If scripting is blocked by a file previewer, browser hosting is required.
+      const $ = id => document.getElementById(id);
+      const W = 420, H = 640, roadL = 50, roadR = 370, laneW=(roadR-roadL)/3;
+      // Internal drawing coordinates are fixed; CSS resizes the whole game for phones.
+      let mode = 'ready', elapsed=0, score=0, passed=0, energy=1, spawnWait=.45, flow=0, last=0, particles=[];
+      let player, rivals=[], audio=null, sound=true;
+      let best = 0;
+      try { best = Number(localStorage.getItem('traffic_dodge_best_1')) || 0; } catch(e){}
+      $('best').textContent=best;
+      const keys={left:false,right:false,up:false,down:false,boost:false};
+      const colors=['#f9aa4d','#f36f75','#ab8cff','#4bc8f3','#83d97f','#f5f1de'];
+      function rand(a,b) { return a+Math.random()*(b-a); }
+      function clamp(v,a,b) { return Math.max(a,Math.min(b,v)); }
+      function laneCenter(i) { return roadL+laneW*(i+.5); }
+      function reset() {
+        mode='running'; elapsed=0; score=0; passed=0; energy=1; spawnWait=.38; flow=0; particles=[];
+        rivals=[]; player={x:W/2,y:H-128,w:44,h:78,tilt:0};
+        Object.keys(keys).forEach(k=>keys[k]=false);
+        document.querySelectorAll('.control').forEach(b=>b.classList.remove('pressed'));
+        $('stop').disabled=false;
+        $('overlay').classList.add('hidden'); updateHUD();
+      }
+      function stopRun() {
+        if(mode!=='running')return;
+        mode='stopped';
+        Object.keys(keys).forEach(k=>keys[k]=false);
+        document.querySelectorAll('.control').forEach(b=>b.classList.remove('pressed'));
+        $('stop').disabled=true;
+        $('icon').textContent='⏹️';
+        $('title').textContent='Заезд остановлен';
+        $('desc').textContent=`Проехал ${(elapsed).toFixed(1)} сек. Объехал машин: ${passed}. Очки: ${score}.`;
+        $('start').textContent='Начать заново →';
+        $('overlay').classList.remove('hidden');
+        updateHUD();
+      }
+      function finish(won) {
+        mode=won?'won':'lost';
+        $('stop').disabled=true;
+        Object.keys(keys).forEach(k=>keys[k]=false);
+        document.querySelectorAll('.control').forEach(b=>b.classList.remove('pressed'));
+        if(score>best) { best=score; try{localStorage.setItem('traffic_dodge_best_1',String(best));}catch(e){} }
+        $('best').textContent=best;
+        $('icon').textContent=won?'🏆':'💥';
+        $('title').textContent=won?'Финиш! Ты справился!':'Столкновение!';
+        $('desc').textContent=`${won?'Трасса пройдена.':'Заезд окончен.'} Объехал машин: ${passed}. Очки: ${score}. ${score===best && score>0?'Новый рекорд!':''}`;
+        $('start').textContent='Играть ещё раз ↻';
+        $('overlay').classList.remove('hidden');
+        tone(won?680:110,.23,won?'triangle':'sawtooth');
+      }
+      function updateHUD() {
+        $('time').textContent=(Math.max(0,30-elapsed)).toFixed(1);
+        $('passed').textContent=passed;
+        $('speed').textContent= mode==='running' && keys.boost && energy>0 ? 145 : 90;
+        $('energy').style.width=`${Math.round(energy*100)}%`;
+      }
+      function tone(freq,duration,type='sine') {
+        if(!sound)return;
+        try {
+          const AudioContext=window.AudioContext||window.webkitAudioContext;
+          if(!AudioContext)return;
+          if (!audio) audio = new AudioContext();
+          if(audio.state==='suspended')audio.resume();
+          const osc=audio.createOscillator(), gain=audio.createGain();
+          osc.type=type; osc.frequency.setValueAtTime(freq,audio.currentTime);
+          osc.frequency.exponentialRampToValueAtTime(Math.max(45,freq*.65),audio.currentTime+duration);
+          gain.gain.setValueAtTime(.085,audio.currentTime);
+          gain.gain.exponentialRampToValueAtTime(.001,audio.currentTime+duration);
+          osc.connect(gain);gain.connect(audio.destination);osc.start();osc.stop(audio.currentTime+duration);
+        } catch(e){}
+      }
+      function createRival(){
+        const lane=Math.floor(Math.random()*3);
+        const x=laneCenter(lane)+rand(-12,12);
+        rivals.push({x, y:-110, w:44, h:78, speed:rand(3,50), color:colors[Math.floor(rand(0,colors.length))], counted:false});
+        // Occasional pair, but never block all 3 lanes at once.
+        if(elapsed>15 && Math.random()<.16) {
+          const other=(lane+1+Math.floor(Math.random()*2))%3;
+          rivals.push({x:laneCenter(other)+rand(-8,8), y:-112, w:44, h:78, speed:rand(3,35),color:colors[Math.floor(rand(0,colors.length))],counted:false});
+        }
+      }
+      function hit(a,b){
+        // Slightly tighter collision boxes feel fair with rounded car silhouettes.
+        return Math.abs(a.x-b.x)<(a.w+b.w)*.42 && Math.abs(a.y-b.y)<(a.h+b.h)*.43;
+      }
+      function update(dt){
+        if(mode!=='running')return;
+        elapsed+=dt;
+        if(elapsed>=30){ elapsed=30; finish(true);updateHUD();return; }
+        const boosting=keys.boost && energy>.03;
+        energy=clamp(energy+(boosting?-.27:.14)*dt,0,1);
+        const direction=(+keys.right)-(+keys.left), forward=(+keys.down)-(+keys.up);
+        player.x=clamp(player.x+direction*310*dt,roadL+player.w/2+6,roadR-player.w/2-6);
+        player.y=clamp(player.y+forward*225*dt,H-260,H-73);
+        player.tilt+=(direction*.09-player.tilt)*Math.min(1,dt*9);
+        const roadSpeed=(boosting?370:240)+elapsed*4.1;
+        flow=(flow+roadSpeed*dt)%100;
+        spawnWait-=dt;
+        if(spawnWait<=0){createRival();spawnWait=rand(.68,.93)-elapsed*.0075;}
+        for(let i=rivals.length-1;i>=0;i--){
+          const r=rivals[i];r.y+=(roadSpeed+r.speed)*dt;
+          if(hit(player,r)){
+            for(let j=0;j<26;j++)particles.push({x:player.x,y:player.y,dx:rand(-200,200),dy:rand(-200,200),life:rand(.2,.7)});
+            finish(false); break;
+          }
+          if(!r.counted && r.y-r.h/2>player.y+player.h/2){r.counted=true;passed++;score+=boosting?20:10;tone(boosting?900:620,.045);}
+          if(r.y>H+130)rivals.splice(i,1);
+        }
+        for(const p of particles){p.x+=p.dx*dt;p.y+=p.dy*dt;p.life-=dt;}
+        particles=particles.filter(p=>p.life>0);
+        updateHUD();
+      }
+      function roundedRect(x,y,w,h,r,fill){
+        ctx.beginPath();
+        if(typeof ctx.roundRect==='function') ctx.roundRect(x,y,w,h,r);
+        else { // Compatibility with older iOS browsers.
+          const rr=Math.min(r,w/2,h/2);
+          ctx.moveTo(x+rr,y);ctx.lineTo(x+w-rr,y);ctx.quadraticCurveTo(x+w,y,x+w,y+rr);
+          ctx.lineTo(x+w,y+h-rr);ctx.quadraticCurveTo(x+w,y+h,x+w-rr,y+h);
+          ctx.lineTo(x+rr,y+h);ctx.quadraticCurveTo(x,y+h,x,y+h-rr);
+          ctx.lineTo(x,y+rr);ctx.quadraticCurveTo(x,y,x+rr,y);
+          ctx.closePath();
+        }
+        ctx.fillStyle=fill;ctx.fill();
+      }
+      function car(x,y,w,h,color,playerCar=false,tilt=0){
+        ctx.save();ctx.translate(x,y);ctx.rotate(tilt);
+        // Drop shadow and body.
+        ctx.shadowColor='#050b13';ctx.shadowBlur=12;ctx.shadowOffsetY=7;
+        roundedRect(-w/2,-h/2,w,h,10,'#101921');
+        ctx.shadowBlur=0;ctx.shadowOffsetY=0;
+        roundedRect(-w/2+2,-h/2+2,w-4,h-4,9,color);
+        roundedRect(-w/2+5,-h/2+13,w-10,h-27,7,'#121e2b66');
+        // Dark windscreens; car hood faces upwards only for the player.
+        roundedRect(-w/2+8,playerCar?-h/2+15:-h/2+42,w-16,17,4,'#142b44');
+        roundedRect(-w/2+8,playerCar?h/2-29:-h/2+14,w-16,14,4,'#325878');
+        ctx.fillStyle='#effbff';
+        if(playerCar) {ctx.fillRect(-w/2+6,-h/2+2,10,5);ctx.fillRect(w/2-16,-h/2+2,10,5);}
+        else {ctx.fillRect(-w/2+6,h/2-7,10,5);ctx.fillRect(w/2-16,h/2-7,10,5);}
+        ctx.fillStyle='#fc3b5c';
+        if(playerCar){ctx.fillRect(-w/2+5,h/2-7,10,5);ctx.fillRect(w/2-15,h/2-7,10,5);}
+        else {ctx.fillRect(-w/2+5,-h/2+2,10,5);ctx.fillRect(w/2-15,-h/2+2,10,5);}
+        ctx.restore();
+      }
+      function draw(){
+        ctx.setTransform(c.width/W,0,0,c.height/H,0,0);
+        ctx.clearRect(0,0,W,H);
+        ctx.fillStyle='#175148';ctx.fillRect(0,0,W,H);
+        // Moving shoulder foliage and roadside posts.
+        for(let side=0;side<2;side++){
+          const x=side?392:27;
+          for(let y=-95+(flow*.85)%110;y<H+40;y+=110){
+            ctx.fillStyle='#246f55';ctx.beginPath();ctx.arc(x+(side?7:-7),y,18,0,Math.PI*2);ctx.fill();
+            ctx.fillStyle='#39936c';ctx.beginPath();ctx.arc(x,y-7,12,0,Math.PI*2);ctx.fill();
+            roundedRect(side?379:36,y+20,5,22,2,(Math.floor(y/110)%2)?'#e9ebdf':'#ec7972');
+          }
+        }
+        ctx.fillStyle='#242e3a';ctx.fillRect(roadL,0,roadR-roadL,H);
+        ctx.fillStyle='#303c49';ctx.fillRect(roadL+9,0,roadR-roadL-18,H);
+        ctx.fillStyle='#e5e8e4';ctx.fillRect(roadL+8,0,3,H);ctx.fillRect(roadR-11,0,3,H);
+        ctx.fillStyle='#f6d270';
+        for(let line=1;line<=2;line++){
+          const xx=roadL+laneW*line;
+          for(let y=-100+flow;y<H+100;y+=100){ctx.fillRect(xx-2,y,4,53);}
+        }
+        // Starting line texture on the road and road sheen.
+        const light=ctx.createLinearGradient(roadL,0,roadR,0);light.addColorStop(0,'#ffffff08');light.addColorStop(.5,'#ffffff00');light.addColorStop(1,'#ffffff07');
+        ctx.fillStyle=light;ctx.fillRect(roadL+12,0,roadR-roadL-24,H);
+        for(const r of rivals)car(r.x,r.y,r.w,r.h,r.color,false,0);
+        if(player){
+          if(mode==='running'&&keys.boost&&energy>0){
+            ctx.fillStyle='#ffb34b';ctx.beginPath();ctx.moveTo(player.x-11,player.y+40);ctx.lineTo(player.x-4,player.y+rand(54,76));ctx.lineTo(player.x+3,player.y+40);ctx.fill();
+            ctx.beginPath();ctx.moveTo(player.x+6,player.y+40);ctx.lineTo(player.x+12,player.y+rand(54,76));ctx.lineTo(player.x+17,player.y+40);ctx.fill();
+          }
+          car(player.x,player.y,player.w,player.h,'#5af0d2',true,player.tilt);
+        }
+        for(const p of particles){ctx.globalAlpha=clamp(p.life*2,0,1);ctx.fillStyle='#ffe28a';ctx.fillRect(p.x,p.y,6,6);}ctx.globalAlpha=1;
+        if(mode==='running'){
+          roundedRect(122,10,176,28,10,'#102034bb');
+          ctx.fillStyle='#d5e6f7';ctx.font='bold 12px system-ui';ctx.textAlign='center';
+          ctx.fillText(elapsed<10?'УРОВЕНЬ 1 · РАЗМИНКА':elapsed<20?'УРОВЕНЬ 2 · ПОТОК':'УРОВЕНЬ 3 · ХАОС',210,29);
+        }
+      }
+      function frame(t){
+        const dt=Math.min((t-last)/1000||0,.035);last=t;
+        update(dt);draw();requestAnimationFrame(frame);
+      }
+      $('start').addEventListener('click',()=>{reset();tone(750,.07);});
+      $('start').addEventListener('touchend',e=>{ if(mode!=='running') { e.preventDefault(); reset();tone(750,.07); } }, {passive:false});
+      $('stop').addEventListener('click',stopRun);
+      const map={ArrowLeft:'left',ArrowRight:'right',ArrowUp:'up',ArrowDown:'down',KeyA:'left',KeyD:'right',KeyW:'up',KeyS:'down',ShiftLeft:'boost',ShiftRight:'boost',Space:'boost'};
+      window.addEventListener('keydown',e=>{
+        const k=map[e.code];if(k){e.preventDefault();keys[k]=true;}
+        if((e.code==='Enter'||e.code==='Space') && mode!=='running'){e.preventDefault();reset();}
+      });
+      window.addEventListener('keyup',e=>{const k=map[e.code];if(k){e.preventDefault();keys[k]=false;}});
+      window.addEventListener('blur',()=>{Object.keys(keys).forEach(k=>keys[k]=false);document.querySelectorAll('.control').forEach(b=>b.classList.remove('pressed'));});
+      for(const btn of document.querySelectorAll('.control')){
+        const k=btn.dataset.key;
+        const down=e=>{e.preventDefault();try{btn.setPointerCapture(e.pointerId);}catch(_){}keys[k]=true;btn.classList.add('pressed');};
+        const up=e=>{e.preventDefault();keys[k]=false;btn.classList.remove('pressed');};
+        btn.addEventListener('pointerdown',down);
+        btn.addEventListener('pointerup',up);
+        btn.addEventListener('pointercancel',up);
+        btn.addEventListener('lostpointercapture',()=>{keys[k]=false;btn.classList.remove('pressed');});
+      }
+      $('soundBtn').addEventListener('click',()=>{sound=!sound;$('soundBtn').textContent=sound?'🔊 Звук':'🔇 Выкл';if(sound)tone(660,.08);});
+      player={x:W/2,y:H-128,w:44,h:78,tilt:0};
+      // High density pixel buffer for crisp road markings, including on Retina screens.
+      function resize(){const cssHeight=c.getBoundingClientRect().height||640; const dpr=Math.min(window.devicePixelRatio||1,2);c.width=Math.round(c.getBoundingClientRect().width*dpr);c.height=Math.round(cssHeight*dpr);}
+      window.addEventListener('resize',resize);
+      if(window.visualViewport)window.visualViewport.addEventListener('resize',resize);
+      resize();requestAnimationFrame(frame);
+    })();
+  </script>
+</body>
+</html>
