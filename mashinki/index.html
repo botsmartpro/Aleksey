@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#101522" />
-  <title>Машинки — 30 секунд · iPhone и компьютер</title>
+  <title>Машинки 2026 — три лобовых и боковой таран</title>
   <style>
     :root { color-scheme: dark; --bg:#101522; --panel:#1a2334; --light:#ecf6ff; --muted:#a4b5d1; --aqua:#58f1d2; --hot:#ffbd5a; }
     * { box-sizing:border-box; }
@@ -17,11 +17,14 @@
     .record { text-align:right; padding:7px 10px; border:1px solid #38465b; border-radius:12px; min-width:90px; background:rgba(255,255,255,.04); }
     .record b { display:block; font-size:18px; color:var(--hot); }
     .record small { color:var(--muted); font-size:10px; text-transform:uppercase; letter-spacing:.1em; }
-    .stats { display:grid; grid-template-columns:1fr 1fr 1fr; gap:7px; }
+    .stats { display:grid; grid-template-columns:1.14fr .92fr .84fr 1.08fr; gap:5px; }
     .stat { border-radius:12px; padding:8px 10px; background:#1d293b; border:1px solid #2f415b; }
     .stat small { display:block; font-size:10px; font-weight:700; text-transform:uppercase; color:var(--muted); letter-spacing:.08em; }
     .stat strong { display:block; font-size:21px; line-height:1.12; font-variant-numeric:tabular-nums; }
     .stat.time strong { color:var(--aqua); }
+    .stat.damage strong {color:#ffd085;}
+    .stat.damage.critical {background:#532938;border-color:#ff7a8d;}
+    .stat.damage.critical strong {color:#ff8d98;}
     .screen { width:100%; position:relative; overflow:hidden; border:2px solid #344b64; border-radius:19px; box-shadow:0 20px 50px #0007,0 0 0 3px #131c2a; background:#273447; }
     canvas { display:block; width:100%; aspect-ratio:420/640; touch-action:none; }
     .overlay { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; background:linear-gradient(#0e16248c,#0b1323d9); padding:17px; transition:opacity .18s; }
@@ -61,8 +64,8 @@
       .control { border-radius:10px; }
       .hint { display:none; }
       .meta { min-height:30px; }
-      .stat {padding:7px 8px;}
-      .stat strong {font-size:19px;}
+      .stat {padding:7px 6px;}
+      .stat strong {font-size:17px;}
     }
     @media(max-height:700px) and (max-width:600px) and (orientation:portrait) {
       .app {gap:5px;}
@@ -92,11 +95,12 @@
   <main class="app">
     <noscript><div class="noscript">Для игры нужен JavaScript. Если кнопка «Начать заезд» не работает, открой игру по обычной ссылке на сайте, а не в предпросмотре скачанного HTML-файла.</div></noscript>
     <header>
-      <div><h1>🏎️ Встречная полоса</h1><div class="subtitle">Аркадная гонка · 30 секунд</div></div>
+      <div><h1>🏎️ Электрокары 2026</h1><div class="subtitle">Zeekr × Li Auto · 30 секунд</div></div>
       <div class="record"><small>Рекорд</small><b id="best">0</b></div>
     </header>
     <div class="stats" aria-live="off">
       <div class="stat time"><small>Осталось</small><strong><span id="time">30.0</span> с</strong></div>
+      <div class="stat damage" id="damage"><small>Лобовые</small><strong><span id="hits">0</span><span style="font-size:12px">/3</span></strong></div>
       <div class="stat"><small>Обогнал</small><strong id="passed">0</strong></div>
       <div class="stat"><small>Скорость</small><strong><span id="speed">90</span> <span style="font-size:11px">км/ч</span></strong></div>
     </div>
@@ -105,8 +109,8 @@
       <div class="overlay" id="overlay">
         <div class="dialog">
           <div class="emoji" id="icon">🏁</div>
-          <h2 id="title">Продержись 30 секунд!</h2>
-          <p id="desc">Объезжай встречные машины. Одно столкновение — и заезд окончен. Ускорение приносит больше очков.</p>
+          <h2 id="title">Выдержи 30 секунд!</h2>
+          <p id="desc">Задень машину сбоку — она закрутится и улетит с трассы! Выживи 30 секунд. Заезд закончится лишь после третьего лобового удара.</p>
           <button class="play" id="start">Начать заезд →</button>
         </div>
       </div>
@@ -131,18 +135,20 @@
       const W = 420, H = 640, roadL = 50, roadR = 370, laneW=(roadR-roadL)/3;
       // Internal drawing coordinates are fixed; CSS resizes the whole game for phones.
       let mode = 'ready', elapsed=0, score=0, passed=0, energy=1, spawnWait=.45, flow=0, last=0, particles=[];
+      let frontHits=0, knockouts=0, grace=0, impactFlash=0, wrecks=[];
       let player, rivals=[], audio=null, sound=true;
       let best = 0;
       try { best = Number(localStorage.getItem('traffic_dodge_best_1')) || 0; } catch(e){}
       $('best').textContent=best;
       const keys={left:false,right:false,up:false,down:false,boost:false};
-      const colors=['#f9aa4d','#f36f75','#ab8cff','#4bc8f3','#83d97f','#f5f1de'];
+      const colors=['#e5edf2','#a9b7c8','#263141','#d8a78a','#5d8da8','#d4d3c9','#9c4356'];
       function rand(a,b) { return a+Math.random()*(b-a); }
       function clamp(v,a,b) { return Math.max(a,Math.min(b,v)); }
       function laneCenter(i) { return roadL+laneW*(i+.5); }
       function reset() {
         mode='running'; elapsed=0; score=0; passed=0; energy=1; spawnWait=.38; flow=0; particles=[];
-        rivals=[]; player={x:W/2,y:H-128,w:44,h:78,tilt:0};
+        frontHits=0;knockouts=0;grace=0;impactFlash=0;wrecks=[];
+        rivals=[]; player={x:W/2,y:H-128,w:47,h:84,tilt:0};
         Object.keys(keys).forEach(k=>keys[k]=false);
         document.querySelectorAll('.control').forEach(b=>b.classList.remove('pressed'));
         $('stop').disabled=false;
@@ -156,7 +162,7 @@
         $('stop').disabled=true;
         $('icon').textContent='⏹️';
         $('title').textContent='Заезд остановлен';
-        $('desc').textContent=`Проехал ${(elapsed).toFixed(1)} сек. Объехал машин: ${passed}. Очки: ${score}.`;
+        $('desc').textContent=`Проехал ${(elapsed).toFixed(1)} сек. Лобовые: ${frontHits}/3. Выбил с трассы: ${knockouts}. Очки: ${score}.`;
         $('start').textContent='Начать заново →';
         $('overlay').classList.remove('hidden');
         updateHUD();
@@ -169,8 +175,8 @@
         if(score>best) { best=score; try{localStorage.setItem('traffic_dodge_best_1',String(best));}catch(e){} }
         $('best').textContent=best;
         $('icon').textContent=won?'🏆':'💥';
-        $('title').textContent=won?'Финиш! Ты справился!':'Столкновение!';
-        $('desc').textContent=`${won?'Трасса пройдена.':'Заезд окончен.'} Объехал машин: ${passed}. Очки: ${score}. ${score===best && score>0?'Новый рекорд!':''}`;
+        $('title').textContent=won?'Финиш! Ты справился!':'Третье лобовое столкновение!';
+        $('desc').textContent=`${won?'Трасса пройдена!':'Заезд окончен.'} Лобовые: ${frontHits}/3. Выбил с трассы: ${knockouts}. Обогнал: ${passed}. Очки: ${score}. ${score===best && score>0?'Новый рекорд!':''}`;
         $('start').textContent='Играть ещё раз ↻';
         $('overlay').classList.remove('hidden');
         tone(won?680:110,.23,won?'triangle':'sawtooth');
@@ -178,6 +184,8 @@
       function updateHUD() {
         $('time').textContent=(Math.max(0,30-elapsed)).toFixed(1);
         $('passed').textContent=passed;
+        $('hits').textContent=frontHits;
+        $('damage').classList.toggle('critical',frontHits>=2);
         $('speed').textContent= mode==='running' && keys.boost && energy>0 ? 145 : 90;
         $('energy').style.width=`${Math.round(energy*100)}%`;
       }
@@ -196,27 +204,42 @@
           osc.connect(gain);gain.connect(audio.destination);osc.start();osc.stop(audio.currentTime+duration);
         } catch(e){}
       }
+      function newRival(lane,offset){
+        const model=Math.random()<.5?'zeekr':'li';
+        const w=model==='li'?49:46,h=model==='li'?88:82;
+        return {x:laneCenter(lane)+offset,y:-115,w,h,model,
+          speed:rand(3,50),color:colors[Math.floor(rand(0,colors.length))],counted:false};
+      }
       function createRival(){
         const lane=Math.floor(Math.random()*3);
-        const x=laneCenter(lane)+rand(-12,12);
-        rivals.push({x, y:-110, w:44, h:78, speed:rand(3,50), color:colors[Math.floor(rand(0,colors.length))], counted:false});
-        // Occasional pair, but never block all 3 lanes at once.
-        if(elapsed>15 && Math.random()<.16) {
+        rivals.push(newRival(lane,rand(-12,12)));
+        // A pair may arrive together, but never block all three lanes.
+        if(elapsed>15&&Math.random()<.16){
           const other=(lane+1+Math.floor(Math.random()*2))%3;
-          rivals.push({x:laneCenter(other)+rand(-8,8), y:-112, w:44, h:78, speed:rand(3,35),color:colors[Math.floor(rand(0,colors.length))],counted:false});
+          rivals.push(newRival(other,rand(-8,8)));
         }
       }
       function hit(a,b){
-        // Slightly tighter collision boxes feel fair with rounded car silhouettes.
         return Math.abs(a.x-b.x)<(a.w+b.w)*.42 && Math.abs(a.y-b.y)<(a.h+b.h)*.43;
+      }
+      function sparks(x,y,n,tint){
+        for(let j=0;j<n;j++)particles.push({x,y,dx:rand(-225,225),dy:rand(-225,225),life:rand(.2,.8),color:tint});
+      }
+      function knockAway(r,dir,frontal){
+        const side=dir||((r.x>=W/2)?1:-1);
+        wrecks.push({...r,vx:side*rand(frontal?220:340,frontal?310:460),
+          vy:rand(-100,30),angle:0,spin:side*rand(frontal?3:5,frontal?5:9),life:2.1});
+        sparks(r.x,r.y,frontal?22:16,frontal?'#ffad79':'#ffedaf');
       }
       function update(dt){
         if(mode!=='running')return;
         elapsed+=dt;
-        if(elapsed>=30){ elapsed=30; finish(true);updateHUD();return; }
-        const boosting=keys.boost && energy>.03;
+        if(elapsed>=30){elapsed=30;finish(true);updateHUD();return;}
+        grace=Math.max(0,grace-dt);
+        impactFlash=Math.max(0,impactFlash-dt);
+        const boosting=keys.boost&&energy>.03;
         energy=clamp(energy+(boosting?-.27:.14)*dt,0,1);
-        const direction=(+keys.right)-(+keys.left), forward=(+keys.down)-(+keys.up);
+        const direction=(+keys.right)-(+keys.left),forward=(+keys.down)-(+keys.up);
         player.x=clamp(player.x+direction*310*dt,roadL+player.w/2+6,roadR-player.w/2-6);
         player.y=clamp(player.y+forward*225*dt,H-260,H-73);
         player.tilt+=(direction*.09-player.tilt)*Math.min(1,dt*9);
@@ -225,13 +248,42 @@
         spawnWait-=dt;
         if(spawnWait<=0){createRival();spawnWait=rand(.68,.93)-elapsed*.0075;}
         for(let i=rivals.length-1;i>=0;i--){
-          const r=rivals[i];r.y+=(roadSpeed+r.speed)*dt;
+          const r=rivals[i];
+          r.y+=(roadSpeed+r.speed)*dt;
           if(hit(player,r)){
-            for(let j=0;j<26;j++)particles.push({x:player.x,y:player.y,dx:rand(-200,200),dy:rand(-200,200),life:rand(.2,.7)});
-            finish(false); break;
+            const dx=r.x-player.x;
+            const frontal=Math.abs(dx)<Math.min(player.w,r.w)*.48;
+            if(!frontal){
+              // A side swipe pushes the other car sideways, spinning onto the verge.
+              knockAway(r,Math.sign(dx)||Math.sign(direction)||1,false);
+              rivals.splice(i,1);knockouts++;score+=35;tone(390,.12,'sawtooth');
+              continue;
+            }
+            // Front-on collision: three separate impacts are required to end the run.
+            if(grace<=0){
+              frontHits++;impactFlash=.38;grace=1.15;
+              knockAway(r,Math.sign(dx)||((r.x<W/2)?-1:1),true);
+              player.y=clamp(player.y+12,H-260,H-73);
+              tone(125,.24,'sawtooth');
+              rivals.splice(i,1);
+              if(frontHits>=3){finish(false);break;}
+            }else{
+              // Grace period prevents an overlapping crowd from taking all three lives at once.
+              knockAway(r,Math.sign(dx)||1,true);
+              rivals.splice(i,1);
+            }
+            continue;
           }
-          if(!r.counted && r.y-r.h/2>player.y+player.h/2){r.counted=true;passed++;score+=boosting?20:10;tone(boosting?900:620,.045);}
+          if(!r.counted&&r.y-r.h/2>player.y+player.h/2){
+            r.counted=true;passed++;score+=boosting?20:10;tone(boosting?900:620,.045);
+          }
           if(r.y>H+130)rivals.splice(i,1);
+        }
+        for(let i=wrecks.length-1;i>=0;i--){
+          const r=wrecks[i];
+          r.x+=r.vx*dt;r.y+=(roadSpeed*.35+r.vy)*dt;r.angle+=r.spin*dt;
+          r.vx*=Math.max(0,1-dt*.35);r.life-=dt;
+          if(r.life<=0||r.x<-100||r.x>W+100||r.y>H+150)wrecks.splice(i,1);
         }
         for(const p of particles){p.x+=p.dx*dt;p.y+=p.dy*dt;p.life-=dt;}
         particles=particles.filter(p=>p.life>0);
@@ -250,23 +302,53 @@
         }
         ctx.fillStyle=fill;ctx.fill();
       }
-      function car(x,y,w,h,color,playerCar=false,tilt=0){
-        ctx.save();ctx.translate(x,y);ctx.rotate(tilt);
-        // Drop shadow and body.
-        ctx.shadowColor='#050b13';ctx.shadowBlur=12;ctx.shadowOffsetY=7;
-        roundedRect(-w/2,-h/2,w,h,10,'#101921');
+      function car(x,y,w,h,color,playerCar=false,tilt=0,model='zeekr'){
+        ctx.save();ctx.translate(x,y);ctx.rotate(tilt+(playerCar?0:Math.PI));
+        const isLi=model==='li';
+        // Four dark wheels, premium rounded silhouette and soft metallic bodywork.
+        for(const xx of [-1,1])for(const yy of [-1,1]){
+          roundedRect(xx*w/2-(xx>0?1:6),yy*h*.28-11,7,23,3,'#0a1119');
+        }
+        ctx.shadowColor='#030710';ctx.shadowBlur=15;ctx.shadowOffsetY=7;
+        roundedRect(-w/2,-h/2,w,h,isLi?10:14,'#0b111a');
         ctx.shadowBlur=0;ctx.shadowOffsetY=0;
-        roundedRect(-w/2+2,-h/2+2,w-4,h-4,9,color);
-        roundedRect(-w/2+5,-h/2+13,w-10,h-27,7,'#121e2b66');
-        // Dark windscreens; car hood faces upwards only for the player.
-        roundedRect(-w/2+8,playerCar?-h/2+15:-h/2+42,w-16,17,4,'#142b44');
-        roundedRect(-w/2+8,playerCar?h/2-29:-h/2+14,w-16,14,4,'#325878');
-        ctx.fillStyle='#effbff';
-        if(playerCar) {ctx.fillRect(-w/2+6,-h/2+2,10,5);ctx.fillRect(w/2-16,-h/2+2,10,5);}
-        else {ctx.fillRect(-w/2+6,h/2-7,10,5);ctx.fillRect(w/2-16,h/2-7,10,5);}
-        ctx.fillStyle='#fc3b5c';
-        if(playerCar){ctx.fillRect(-w/2+5,h/2-7,10,5);ctx.fillRect(w/2-15,h/2-7,10,5);}
-        else {ctx.fillRect(-w/2+5,-h/2+2,10,5);ctx.fillRect(w/2-15,-h/2+2,10,5);}
+        const paint=ctx.createLinearGradient(-w/2,-h/2,w/2,h/2);
+        paint.addColorStop(0,'#fafcff');paint.addColorStop(.10,color);
+        paint.addColorStop(.58,color);paint.addColorStop(1,'#263240');
+        roundedRect(-w/2+2,-h/2+2,w-4,h-4,isLi?10:13,paint);
+        ctx.strokeStyle='#ffffff75';ctx.lineWidth=1.1;ctx.beginPath();
+        ctx.moveTo(-w/2+8,-h/2+13);ctx.lineTo(-w/2+10,-h/2+25);
+        ctx.moveTo(w/2-8,-h/2+13);ctx.lineTo(w/2-10,-h/2+25);ctx.stroke();
+        // Full-length glass roof in the Li-inspired SUV, a sleek roof in the Zeekr-inspired GT.
+        roundedRect(-w/2+5,-h/2+24,w-10,h-44,isLi?7:10,'#142130');
+        roundedRect(-w/2+7,-h/2+28,w-14,17,isLi?5:9,'#456e85');
+        roundedRect(-w/2+7,-h/2+47,w-14,15,4,'#111c28');
+        roundedRect(-w/2+8,h/2-20,w-16,12,5,'#456879');
+        ctx.strokeStyle='#b5dce386';ctx.lineWidth=1.2;ctx.beginPath();
+        ctx.moveTo(-w/2+8,-h/2+46);ctx.lineTo(w/2-8,-h/2+46);ctx.stroke();
+        // Distinctive 2026 EV lights: Li-style continuous strip or Zeekr-style angular DRLs.
+        ctx.lineWidth=isLi?3.5:3.0;ctx.lineCap='round';
+        ctx.strokeStyle='#f4ffff';ctx.shadowColor='#cafbff';ctx.shadowBlur=8;
+        ctx.beginPath();
+        if(isLi){ctx.moveTo(-w/2+7,-h/2+7);ctx.lineTo(w/2-7,-h/2+7);}
+        else{
+          ctx.moveTo(-w/2+8,-h/2+6);ctx.lineTo(-w/2+17,-h/2+6);
+          ctx.moveTo(w/2-17,-h/2+6);ctx.lineTo(w/2-8,-h/2+6);
+        }
+        ctx.stroke();ctx.shadowBlur=0;
+        if(!isLi){
+          ctx.strokeStyle='#a5ecff';ctx.lineWidth=2;ctx.beginPath();
+          ctx.moveTo(-w/2+8,-h/2+10);ctx.lineTo(-w/2+12,-h/2+16);
+          ctx.moveTo(w/2-8,-h/2+10);ctx.lineTo(w/2-12,-h/2+16);ctx.stroke();
+        }else{
+          ctx.strokeStyle='#fff2dfb0';ctx.lineWidth=1;ctx.beginPath();
+          ctx.moveTo(-w/2+4,-h/2+19);ctx.lineTo(-w/2+4,h/2-17);
+          ctx.moveTo(w/2-4,-h/2+19);ctx.lineTo(w/2-4,h/2-17);ctx.stroke();
+        }
+        ctx.strokeStyle='#ff4c65';ctx.shadowColor='#ff314a';ctx.shadowBlur=8;
+        ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(-w/2+7,h/2-7);ctx.lineTo(w/2-7,h/2-7);ctx.stroke();ctx.shadowBlur=0;
+        ctx.fillStyle='#d8f0fa';ctx.textAlign='center';ctx.font='bold 6px system-ui';
+        ctx.fillText(isLi?'Li':'Z',0,5);
         ctx.restore();
       }
       function draw(){
@@ -293,19 +375,23 @@
         // Starting line texture on the road and road sheen.
         const light=ctx.createLinearGradient(roadL,0,roadR,0);light.addColorStop(0,'#ffffff08');light.addColorStop(.5,'#ffffff00');light.addColorStop(1,'#ffffff07');
         ctx.fillStyle=light;ctx.fillRect(roadL+12,0,roadR-roadL-24,H);
-        for(const r of rivals)car(r.x,r.y,r.w,r.h,r.color,false,0);
+        for(const r of wrecks)car(r.x,r.y,r.w,r.h,r.color,false,r.angle,r.model);
+        for(const r of rivals)car(r.x,r.y,r.w,r.h,r.color,false,0,r.model);
         if(player){
           if(mode==='running'&&keys.boost&&energy>0){
             ctx.fillStyle='#ffb34b';ctx.beginPath();ctx.moveTo(player.x-11,player.y+40);ctx.lineTo(player.x-4,player.y+rand(54,76));ctx.lineTo(player.x+3,player.y+40);ctx.fill();
             ctx.beginPath();ctx.moveTo(player.x+6,player.y+40);ctx.lineTo(player.x+12,player.y+rand(54,76));ctx.lineTo(player.x+17,player.y+40);ctx.fill();
           }
-          car(player.x,player.y,player.w,player.h,'#5af0d2',true,player.tilt);
+          car(player.x,player.y,player.w,player.h,'#83e8eb',true,player.tilt,'zeekr');
         }
-        for(const p of particles){ctx.globalAlpha=clamp(p.life*2,0,1);ctx.fillStyle='#ffe28a';ctx.fillRect(p.x,p.y,6,6);}ctx.globalAlpha=1;
+        for(const p of particles){ctx.globalAlpha=clamp(p.life*2,0,1);ctx.fillStyle=p.color||'#ffe28a';ctx.fillRect(p.x,p.y,6,6);}ctx.globalAlpha=1;
+        if(impactFlash>0&&mode==='running'){
+          ctx.fillStyle='rgba(255,65,75,'+(impactFlash*.42)+')';ctx.fillRect(roadL,0,roadR-roadL,H);
+        }
         if(mode==='running'){
           roundedRect(122,10,176,28,10,'#102034bb');
           ctx.fillStyle='#d5e6f7';ctx.font='bold 12px system-ui';ctx.textAlign='center';
-          ctx.fillText(elapsed<10?'УРОВЕНЬ 1 · РАЗМИНКА':elapsed<20?'УРОВЕНЬ 2 · ПОТОК':'УРОВЕНЬ 3 · ХАОС',210,29);
+          ctx.fillText(impactFlash>0?'ЛОБОВОЙ УДАР · '+frontHits+'/3':elapsed<10?'УРОВЕНЬ 1 · РАЗМИНКА':elapsed<20?'УРОВЕНЬ 2 · ПОТОК':'УРОВЕНЬ 3 · ХАОС',210,29);
         }
       }
       function frame(t){
@@ -332,7 +418,7 @@
         btn.addEventListener('lostpointercapture',()=>{keys[k]=false;btn.classList.remove('pressed');});
       }
       $('soundBtn').addEventListener('click',()=>{sound=!sound;$('soundBtn').textContent=sound?'🔊 Звук':'🔇 Выкл';if(sound)tone(660,.08);});
-      player={x:W/2,y:H-128,w:44,h:78,tilt:0};
+      player={x:W/2,y:H-128,w:47,h:84,tilt:0};
       // High density pixel buffer for crisp road markings, including on Retina screens.
       function resize(){const cssHeight=c.getBoundingClientRect().height||640; const dpr=Math.min(window.devicePixelRatio||1,2);c.width=Math.round(c.getBoundingClientRect().width*dpr);c.height=Math.round(cssHeight*dpr);}
       window.addEventListener('resize',resize);
