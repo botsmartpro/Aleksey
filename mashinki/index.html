@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#101522" />
-  <title>Машинки 2026 — три лобовых и боковой таран</title>
+  <title>Машинки 2026 — 3 уровня, кубки и трамплины</title>
   <style>
     :root { color-scheme: dark; --bg:#101522; --panel:#1a2334; --light:#ecf6ff; --muted:#a4b5d1; --aqua:#58f1d2; --hot:#ffbd5a; }
     * { box-sizing:border-box; }
@@ -25,6 +25,11 @@
     .stat.damage strong {color:#ffd085;}
     .stat.damage.critical {background:#532938;border-color:#ff7a8d;}
     .stat.damage.critical strong {color:#ff8d98;}
+    .progress {display:flex;align-items:center;justify-content:space-between;padding:4px 9px;background:#182b3c;border:1px solid #3b546b;border-radius:11px;min-height:29px;flex-shrink:0;}
+    .progress strong {font-size:12px;color:#d1fff2;}
+    .cups {display:flex;gap:9px;font-size:19px;}
+    .cups span {opacity:.2;filter:grayscale(1);}
+    .cups span.earned {opacity:1;filter:none;}
     .screen { width:100%; position:relative; overflow:hidden; border:2px solid #344b64; border-radius:19px; box-shadow:0 20px 50px #0007,0 0 0 3px #131c2a; background:#273447; }
     canvas { display:block; width:100%; aspect-ratio:420/640; touch-action:none; }
     .overlay { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; background:linear-gradient(#0e16248c,#0b1323d9); padding:17px; transition:opacity .18s; }
@@ -57,7 +62,7 @@
         height:100vh; height:100dvh; min-height:0;
         gap:7px; padding: max(8px,env(safe-area-inset-top)) 11px max(8px,env(safe-area-inset-bottom));
       }
-      header,.stats,.meta { flex-shrink:0; }
+      header,.stats,.meta,.progress { flex-shrink:0; }
       .screen { flex:1 1 auto; min-height:0; }
       canvas { height:100%; width:100%; aspect-ratio:auto; }
       .controls { height:56px; flex:0 0 56px; gap:5px; }
@@ -66,6 +71,8 @@
       .meta { min-height:30px; }
       .stat {padding:7px 6px;}
       .stat strong {font-size:17px;}
+      .progress {min-height:25px;}
+      .cups {font-size:17px;}
     }
     @media(max-height:700px) and (max-width:600px) and (orientation:portrait) {
       .app {gap:5px;}
@@ -95,7 +102,7 @@
   <main class="app">
     <noscript><div class="noscript">Для игры нужен JavaScript. Если кнопка «Начать заезд» не работает, открой игру по обычной ссылке на сайте, а не в предпросмотре скачанного HTML-файла.</div></noscript>
     <header>
-      <div><h1>🏎️ Электрокары 2026</h1><div class="subtitle">Zeekr × Li Auto · 30 секунд</div></div>
+      <div><h1>🏎️ Электрокары 2026</h1><div class="subtitle">3 уровня · трамплины · город</div></div>
       <div class="record"><small>Рекорд</small><b id="best">0</b></div>
     </header>
     <div class="stats" aria-live="off">
@@ -104,13 +111,14 @@
       <div class="stat"><small>Обогнал</small><strong id="passed">0</strong></div>
       <div class="stat"><small>Скорость</small><strong><span id="speed">90</span> <span style="font-size:11px">км/ч</span></strong></div>
     </div>
+    <div class="progress"><strong id="levelLabel">УРОВЕНЬ 1 / 3</strong><span class="cups" aria-label="Награды"><span id="cup1">🏆</span><span id="cup2">🏆</span><span id="cup3">🏆</span></span></div>
     <div class="screen">
       <canvas id="game" width="840" height="1280" aria-label="Игровая трасса с машинками"></canvas>
       <div class="overlay" id="overlay">
         <div class="dialog">
           <div class="emoji" id="icon">🏁</div>
-          <h2 id="title">Выдержи 30 секунд!</h2>
-          <p id="desc">Задень машину сбоку — она закрутится и улетит с трассы! Выживи 30 секунд. Заезд закончится лишь после третьего лобового удара.</p>
+          <h2 id="title">Пройди 3 уровня!</h2>
+          <p id="desc">Каждый уровень — 10 секунд и кубок 🏆. Используй трамплины, чтобы перепрыгивать соперников! Три лобовых удара завершают игру.</p>
           <button class="play" id="start">Начать заезд →</button>
         </div>
       </div>
@@ -136,6 +144,8 @@
       // Internal drawing coordinates are fixed; CSS resizes the whole game for phones.
       let mode = 'ready', elapsed=0, score=0, passed=0, energy=1, spawnWait=.45, flow=0, last=0, particles=[];
       let frontHits=0, knockouts=0, grace=0, impactFlash=0, wrecks=[];
+      const LEVEL_SECONDS=10,LEVELS=3,JUMP_DURATION=1.2;
+      let level=1,cups=0,ramps=[],rampWait=1.8,jumpTime=0,cityScroll=0,bonusFlash=0;
       let player, rivals=[], audio=null, sound=true;
       let best = 0;
       try { best = Number(localStorage.getItem('traffic_dodge_best_1')) || 0; } catch(e){}
@@ -148,11 +158,38 @@
       function reset() {
         mode='running'; elapsed=0; score=0; passed=0; energy=1; spawnWait=.38; flow=0; particles=[];
         frontHits=0;knockouts=0;grace=0;impactFlash=0;wrecks=[];
+        level=1;cups=0;ramps=[];rampWait=1.8;jumpTime=0;cityScroll=0;bonusFlash=0;
         rivals=[]; player={x:W/2,y:H-128,w:47,h:84,tilt:0};
         Object.keys(keys).forEach(k=>keys[k]=false);
         document.querySelectorAll('.control').forEach(b=>b.classList.remove('pressed'));
         $('stop').disabled=false;
         $('overlay').classList.add('hidden'); updateHUD();
+      }
+      function clearControls(){
+        Object.keys(keys).forEach(k=>keys[k]=false);
+        document.querySelectorAll('.control').forEach(b=>b.classList.remove('pressed'));
+      }
+      function completeLevel(){
+        cups=level;
+        if(level===LEVELS){finish(true);return;}
+        mode='leveldone';clearControls();$('stop').disabled=true;
+        $('icon').textContent='🏆';
+        $('title').textContent='Уровень '+level+' пройден!';
+        $('desc').textContent='Ты получаешь кубок №'+level+'! 🏆 Впереди ещё '+(LEVELS-level)+' уровень(ня). Жизни остаются прежними.';
+        $('start').textContent='Уровень '+(level+1)+' →';
+        $('overlay').classList.remove('hidden');tone(880,.15,'triangle');updateHUD();
+      }
+      function continueLevel(){
+        if(mode!=='leveldone')return;
+        level++;mode='running';spawnWait=.35;rampWait=1.5;
+        ramps=[];rivals=[];wrecks=[];jumpTime=0;grace=Math.max(grace,.7);
+        $('stop').disabled=false;$('overlay').classList.add('hidden');updateHUD();
+      }
+      function begin(){
+        if(mode==='running')return;
+        if(mode==='leveldone')continueLevel();
+        else reset();
+        tone(750,.07);
       }
       function stopRun() {
         if(mode!=='running')return;
@@ -162,7 +199,7 @@
         $('stop').disabled=true;
         $('icon').textContent='⏹️';
         $('title').textContent='Заезд остановлен';
-        $('desc').textContent=`Проехал ${(elapsed).toFixed(1)} сек. Лобовые: ${frontHits}/3. Выбил с трассы: ${knockouts}. Очки: ${score}.`;
+        $('desc').textContent=`Пройдено уровней: ${cups}/3. Кубки: ${'🏆'.repeat(cups)}. Лобовые: ${frontHits}/3. Очки: ${score}.`;
         $('start').textContent='Начать заново →';
         $('overlay').classList.remove('hidden');
         updateHUD();
@@ -175,14 +212,16 @@
         if(score>best) { best=score; try{localStorage.setItem('traffic_dodge_best_1',String(best));}catch(e){} }
         $('best').textContent=best;
         $('icon').textContent=won?'🏆':'💥';
-        $('title').textContent=won?'Финиш! Ты справился!':'Третье лобовое столкновение!';
-        $('desc').textContent=`${won?'Трасса пройдена!':'Заезд окончен.'} Лобовые: ${frontHits}/3. Выбил с трассы: ${knockouts}. Обогнал: ${passed}. Очки: ${score}. ${score===best && score>0?'Новый рекорд!':''}`;
+        $('title').textContent=won?'Чемпион! Все три кубка!':'Третье лобовое столкновение!';
+        $('desc').textContent=`${won?'Ты прошёл все 3 уровня и получил 3 кубка! 🏆🏆🏆':'Заезд окончен.'} Кубки: ${cups}/3. Лобовые: ${frontHits}/3. Выбил с трассы: ${knockouts}. Очки: ${score}. ${score===best && score>0?'Новый рекорд!':''}`;
         $('start').textContent='Играть ещё раз ↻';
         $('overlay').classList.remove('hidden');
         tone(won?680:110,.23,won?'triangle':'sawtooth');
       }
       function updateHUD() {
-        $('time').textContent=(Math.max(0,30-elapsed)).toFixed(1);
+        $('time').textContent=(Math.max(0,level*LEVEL_SECONDS-elapsed)).toFixed(1);
+        $('levelLabel').textContent='УРОВЕНЬ '+level+' / '+LEVELS;
+        for(let n=1;n<=LEVELS;n++)$('cup'+n).classList.toggle('earned',n<=cups);
         $('passed').textContent=passed;
         $('hits').textContent=frontHits;
         $('damage').classList.toggle('critical',frontHits>=2);
@@ -234,7 +273,7 @@
       function update(dt){
         if(mode!=='running')return;
         elapsed+=dt;
-        if(elapsed>=30){elapsed=30;finish(true);updateHUD();return;}
+        if(elapsed>=level*LEVEL_SECONDS){elapsed=level*LEVEL_SECONDS;completeLevel();updateHUD();return;}
         grace=Math.max(0,grace-dt);
         impactFlash=Math.max(0,impactFlash-dt);
         const boosting=keys.boost&&energy>.03;
@@ -398,13 +437,13 @@
         const dt=Math.min((t-last)/1000||0,.035);last=t;
         update(dt);draw();requestAnimationFrame(frame);
       }
-      $('start').addEventListener('click',()=>{reset();tone(750,.07);});
-      $('start').addEventListener('touchend',e=>{ if(mode!=='running') { e.preventDefault(); reset();tone(750,.07); } }, {passive:false});
+      $('start').addEventListener('click',begin);
+      $('start').addEventListener('touchend',e=>{if(mode!=='running'){e.preventDefault();begin();}},{passive:false});
       $('stop').addEventListener('click',stopRun);
       const map={ArrowLeft:'left',ArrowRight:'right',ArrowUp:'up',ArrowDown:'down',KeyA:'left',KeyD:'right',KeyW:'up',KeyS:'down',ShiftLeft:'boost',ShiftRight:'boost',Space:'boost'};
       window.addEventListener('keydown',e=>{
         const k=map[e.code];if(k){e.preventDefault();keys[k]=true;}
-        if((e.code==='Enter'||e.code==='Space') && mode!=='running'){e.preventDefault();reset();}
+        if((e.code==='Enter'||e.code==='Space') && mode!=='running'){e.preventDefault();begin();}
       });
       window.addEventListener('keyup',e=>{const k=map[e.code];if(k){e.preventDefault();keys[k]=false;}});
       window.addEventListener('blur',()=>{Object.keys(keys).forEach(k=>keys[k]=false);document.querySelectorAll('.control').forEach(b=>b.classList.remove('pressed'));});
