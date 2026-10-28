@@ -140,7 +140,7 @@
       const ctx = c.getContext('2d');
       // If scripting is blocked by a file previewer, browser hosting is required.
       const $ = id => document.getElementById(id);
-      const W = 420, H = 640, roadL = 70, roadR = 350, laneW=(roadR-roadL)/3;
+      const W = 420, H = 640, roadL = 92, roadR = 328, laneW=(roadR-roadL)/3;
       // Internal drawing coordinates are fixed; CSS resizes the whole game for phones.
       let mode = 'ready', elapsed=0, score=0, passed=0, energy=1, spawnWait=.45, flow=0, last=0, particles=[];
       let frontHits=0, knockouts=0, grace=0, impactFlash=0, wrecks=[];
@@ -410,44 +410,79 @@
         ctx.font='bold 9px system-ui';ctx.textAlign='center';ctx.fillStyle='#47311d';ctx.fillText('JUMP',0,20);ctx.restore();
       }
       function drawCity(side){
-        const edge=side?roadR:0, width=side?W-roadR:roadL;
-        const cycle=Math.floor(cityScroll/136),off=cityScroll%136;
+        const edge=side?roadR:0,width=side?W-roadR:roadL;
+        const blockH=160,cycle=Math.floor(cityScroll/blockH),off=cityScroll%blockH;
+        ctx.save();
+        ctx.beginPath();ctx.rect(edge,0,width,H);ctx.clip();
+        // Separate pavement and curb make the buildings visibly different from the road.
+        ctx.fillStyle=level===3?'#79848a':'#d6d5c8';
+        ctx.fillRect(side?roadR:roadL-10,0,10,H);
+        ctx.fillStyle='#f2f0dc';
+        ctx.fillRect(side?roadR:roadL-2,0,2,H);
         for(let k=-2;k<7;k++){
-          const y=-136+off+k*136,kind=((cycle-k+(side?2:0))%4+4)%4;
-          const x=edge+9,w=width-18;
+          const y=-blockH+off+k*blockH;
+          const kind=((cycle-k+(side?2:0))%4+4)%4;
+          const bx=edge+7,bw=width-23;
           if(kind===0||kind===3){
-            roundedRect(x+2,y+15,w,82,5,'#263b49');
-            roundedRect(x,y+9,w,81,6,kind===0?'#baa58c':'#88a8ba');
-            for(let row=0;row<3;row++)for(let col=0;col<2;col++)
-              roundedRect(x+5+col*(w/2),y+18+row*20,Math.max(9,w/2-7),12,2,(row+col)%2?'#fee3a8':'#476a83');
-            roundedRect(x,y+94,w,4,2,'#c8c8be');
-          }else if(kind===1){
-            roundedRect(x,y+6,w,119,4,'#45515b');
+            // Readable flat-roofed city blocks with a facade, windows and a roof garden.
+            roundedRect(bx+5,y+15,bw,112,7,'#283b42');
+            roundedRect(bx+1,y+9,bw,108,6,kind===0?'#ceab87':'#92b5c9');
+            roundedRect(bx+6,y+15,bw-10,14,3,kind===0?'#916c56':'#526e80');
             for(let row=0;row<3;row++){
-              ctx.fillStyle='#d3dad7';ctx.fillRect(x+3,y+12+row*35,w-6,2);
-              roundedRect(x+9,y+17+row*35,18,26,4,['#a0d7e4','#e4bda9','#d6dce5'][row]);
-              roundedRect(x+12,y+21+row*35,12,9,2,'#415a6c');
+              for(let col=0;col<2;col++){
+                const wx=bx+8+col*(bw/2-3),wy=y+38+row*21;
+                roundedRect(wx,wy,bw/2-12,13,2,level===3?'#ffe6a0':(row+col)%2?'#f9e0a3':'#346c8b');
+                ctx.fillStyle='#ffffff85';ctx.fillRect(wx+3,wy+2,2,9);
+              }
+            }
+            // Decorative terrace and doorway.
+            roundedRect(bx+bw/2-9,y+98,18,18,2,'#3e545d');
+            roundedRect(bx+5,y+132,bw-9,4,2,'#e5ded0');
+            ctx.font='bold 11px system-ui';ctx.textAlign='center';ctx.fillStyle='#ffefcf';
+            ctx.fillText(kind===0?'ЖК':'CITY',bx+bw/2,y+26);
+          }else if(kind===1){
+            // A very visible PARKING sign and 3 parked vehicles.
+            roundedRect(bx,y+5,bw,140,5,'#485760');
+            roundedRect(bx+4,y+9,24,23,4,'#2068ad');
+            ctx.fillStyle='#fff';ctx.font='bold 18px system-ui';ctx.textAlign='center';
+            ctx.fillText('P',bx+16,y+27);
+            for(let row=0;row<3;row++){
+              const yy=y+41+row*32;
+              ctx.strokeStyle='#f4f6eb';ctx.lineWidth=2;
+              ctx.beginPath();ctx.moveTo(bx+5,yy-1);ctx.lineTo(bx+bw-6,yy-1);ctx.stroke();
+              const px=bx+bw/2-11+(row%2?8:-3);
+              roundedRect(px+2,yy+4,23,29,5,'#1c3542');
+              roundedRect(px,yy+2,23,29,5,['#e7e9e3','#e89e7b','#8ad8d6'][row]);
+              roundedRect(px+4,yy+8,15,11,3,'#273d50');
+              ctx.fillStyle='#fcdae0';ctx.fillRect(px+4,yy+26,15,2);
             }
           }else{
-            roundedRect(x,y+7,w,117,5,'#397b63');
-            ctx.fillStyle='#b0b9a1';ctx.fillRect(x+w/2-2,y+10,4,110);
-            for(let j=0;j<3;j++){
-              const tx=x+(j%2?w-12:12),ty=y+24+j*35;
-              ctx.fillStyle='#225945';ctx.beginPath();ctx.arc(tx+3,ty+4,15,0,Math.PI*2);ctx.fill();
-              ctx.fillStyle='#64b17c';ctx.beginPath();ctx.arc(tx,ty,12,0,Math.PI*2);ctx.fill();
+            // Tree-lined city park with an obvious walking path.
+            roundedRect(bx,y+5,bw,141,7,level===3?'#32675b':'#56a779');
+            roundedRect(bx+bw/2-6,y+8,12,136,5,'#d1c8a3');
+            for(let t=0;t<3;t++){
+              const tx=bx+(t%2?bw-18:19),ty=y+25+t*47;
+              ctx.fillStyle='#1e523b';ctx.beginPath();ctx.arc(tx+4,ty+5,21,0,Math.PI*2);ctx.fill();
+              ctx.fillStyle='#28995e';ctx.beginPath();ctx.arc(tx,ty,19,0,Math.PI*2);ctx.fill();
+              ctx.fillStyle='#9fdd82';ctx.beginPath();ctx.arc(tx-6,ty-6,7,0,Math.PI*2);ctx.fill();
             }
           }
-          const post=side?roadR+3:roadL-3;
-          roundedRect(post-2,y+108,4,8,2,'#c9d5cc');
-          ctx.fillStyle='#fff1a5';ctx.beginPath();ctx.arc(post,y+107,3,0,Math.PI*2);ctx.fill();
+          // Large street lights and street trees at the edge of each city block.
+          const post=side?roadR+5:roadL-5;
+          roundedRect(post-2,y+123,4,16,2,'#354f5d');
+          ctx.shadowColor='#fff4a3';ctx.shadowBlur=12;ctx.fillStyle='#fff5b9';
+          ctx.beginPath();ctx.arc(post,y+122,5,0,Math.PI*2);ctx.fill();ctx.shadowBlur=0;
+          ctx.fillStyle='#275f49';ctx.beginPath();ctx.arc(side?edge+11:edge+width-11,y+147,12,0,Math.PI*2);ctx.fill();
+          ctx.fillStyle='#76bf86';ctx.beginPath();ctx.arc(side?edge+8:edge+width-14,y+144,8,0,Math.PI*2);ctx.fill();
         }
+        ctx.restore();
       }
       function draw(){
         ctx.setTransform(c.width/W,0,0,c.height/H,0,0);
         ctx.clearRect(0,0,W,H);
         ctx.fillStyle='#175148';ctx.fillRect(0,0,W,H);
-        // Detailed city on each side: homes, car parks, trees and streetlights.
-        ctx.fillStyle='#8e999b';ctx.fillRect(0,0,roadL,H);ctx.fillRect(roadR,0,W-roadR,H);
+        // City takes up nearly a quarter of the screen on EACH side, even on iPhone.
+        ctx.fillStyle=level===3?'#425267':'#9ba8a2';ctx.fillRect(0,0,roadL,H);ctx.fillRect(roadR,0,W-roadR,H);
         drawCity(false);drawCity(true);
         ctx.fillStyle='#242e3a';ctx.fillRect(roadL,0,roadR-roadL,H);
         ctx.fillStyle='#303c49';ctx.fillRect(roadL+9,0,roadR-roadL-18,H);
