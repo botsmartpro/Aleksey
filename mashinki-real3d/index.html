@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover,user-scalable=no">
 <meta name="theme-color" content="#081624">
-<title>Машинки 2026 — горизонтальная 3D-гонка</title>
+<title>Машинки REAL 3D — объёмные авто и полёт с трамплина</title>
 <style>
 :root{--txt:#effaff;--line:#ffffff28;--teal:#7cf5db;--amber:#ffca6c}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
@@ -35,6 +35,9 @@ html,body{width:100%;height:100%;margin:0;overflow:hidden;background:#061320;col
 .ctrl.vertical{font-size:17px;width:clamp(41px,6vw,52px)}
 #stop{position:absolute;bottom:max(87px,env(safe-area-inset-bottom) + 74px);right:max(13px,env(safe-area-inset-right));border:1px solid #ffffff45;border-radius:9px;padding:6px 12px;color:#eaf5f9;background:#091b2bd9;font-size:11px;font-weight:800;cursor:pointer}
 #stop:disabled{opacity:.35}
+#driveState{position:absolute;left:50%;top:max(91px,env(safe-area-inset-top) + 83px);transform:translateX(-50%);background:#07182bd9;border:1px solid #88e7ec70;border-radius:10px;padding:5px 15px;font-weight:900;letter-spacing:.06em;font-size:12px;pointer-events:none;white-space:nowrap;color:#d2fff5;text-shadow:0 1px 2px #0006}
+#driveState.reverse{color:#ffcb9a;border-color:#ff9d7c}
+#driveState.jump{color:#ffe886;border-color:#ffd34c;box-shadow:0 0 17px #ffc34b55}
 #dialogLayer{position:absolute;inset:0;display:flex;justify-content:center;align-items:center;background:linear-gradient(120deg,#061321c4,#071c30bb);padding:12px;z-index:5}
 #dialogLayer.hide{display:none}
 .dialog{width:min(420px,80%);max-height:94%;overflow:auto;text-align:center;padding:17px 23px;border-radius:20px;border:1px solid #b7f6ee75;background:linear-gradient(155deg,#274355f2,#0b1c2deF);box-shadow:0 12px 45px #000a}
@@ -55,7 +58,7 @@ html,body{width:100%;height:100%;margin:0;overflow:hidden;background:#061320;col
 <div id="game">
 <canvas id="scene" aria-label="Горизонтальная гонка с 3D-перспективой под углом примерно 30 градусов"></canvas>
 <header class="top">
-<div class="brand"><b>⚡ МАШИНКИ 2026</b><small>Городская гонка • вид сзади 30°</small></div>
+<div class="brand"><b>⚡ МАШИНКИ REAL 3D</b><small>Zeekr × Li Auto • объёмные авто</small></div>
 <div class="metrics">
 <div class="metric"><small>Уровень</small><strong id="level">1 / 3</strong></div>
 <div class="metric"><small>Осталось</small><strong id="time">10.0 с</strong></div>
@@ -64,6 +67,7 @@ html,body{width:100%;height:100%;margin:0;overflow:hidden;background:#061320;col
 </div>
 <div class="trophies"><small>КУБКИ</small><div class="cups"><span id="cup1">🏆</span><span id="cup2">🏆</span><span id="cup3">🏆</span></div></div>
 </header>
+<div id="driveState">▲ ВПЕРЁД</div>
 <button type="button" id="stop" disabled>■ СТОП</button>
 <div class="controls">
 <div class="pad">
@@ -80,7 +84,7 @@ html,body{width:100%;height:100%;margin:0;overflow:hidden;background:#061320;col
 <div id="dialogLayer"><div class="dialog">
 <div class="symbol" id="symbol">🏁</div>
 <h1 id="heading">Гонка под углом 30°</h1>
-<p id="message">Поверни iPhone горизонтально. Езжай к горизонту, используй трамплины, выбивай машины боковым тараном. Каждый из трёх уровней длится 10 секунд и приносит кубок. После трёх лобовых — конец игры.</p>
+<p id="message">Поверни iPhone горизонтально. ▲ — вперёд, ▼ — настоящий задний ход. На трамплине машина отрывается от дороги, летит по дуге и приземляется! Три уровня — три кубка 🏆.</p>
 <button id="play">НАЧАТЬ ГОНКУ →</button>
 </div></div>
 <div id="rotate"><div class="phone">📱</div><h2>Поверни телефон горизонтально</h2><p>Новая версия рассчитана на широкий экран. После поворота управление и трасса появятся автоматически.</p></div>
@@ -95,15 +99,24 @@ const keys={left:false,right:false,up:false,down:false,brake:false,gas:false};
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v)),rand=(a,b)=>a+Math.random()*(b-a);
 let mode='ready',level=1,sec=0,points=0,cups=0,front=0,shunted=0,energy=1,elapsed=0;
 let player={x:0,z:.69},traffic=[],ramps=[],wrecks=[],sparks=[],trafficDelay=.7,rampDelay=2,scroll=0,grace=0,jump=0,flash=0,last=0,audio=null;
+let jumpDuration=1.45,distance=0;
 function rr(x,y,w,h,r,col){ctx.beginPath();if(ctx.roundRect)ctx.roundRect(x,y,w,h,r);else{ctx.moveTo(x+r,y);ctx.lineTo(x+w-r,y);ctx.quadraticCurveTo(x+w,y,x+w,y+r);ctx.lineTo(x+w,y+h-r);ctx.quadraticCurveTo(x+w,y+h,x+w-r,y+h);ctx.lineTo(x+r,y+h);ctx.quadraticCurveTo(x,y+h,x,y+h-r);ctx.lineTo(x,y+r);ctx.quadraticCurveTo(x,y,x+r,y);ctx.closePath()}ctx.fillStyle=col;ctx.fill()}
 function proj(z){z=clamp(z,0,1.4);const t=Math.pow(z,1.3);return {y:HORIZON+482*Math.pow(z,1.46),half:51+ROAD_MAX*Math.pow(z,1.05),scale:.15+.85*t};}
 function pos(x,z){const p=proj(z);return {x:HALF+x*p.half*.88,y:p.y,p};}
 function poly(points,col){ctx.fillStyle=col;ctx.beginPath();ctx.moveTo(points[0][0],points[0][1]);for(let i=1;i<points.length;i++)ctx.lineTo(points[i][0],points[i][1]);ctx.closePath();ctx.fill()}
 function sound(f,d,type){try{const Audio=window.AudioContext||window.webkitAudioContext;if(!Audio)return;if(!audio)audio=new Audio();if(audio.state==='suspended')audio.resume();const osc=audio.createOscillator(),gain=audio.createGain();osc.type=type||'sine';osc.frequency.setValueAtTime(f,audio.currentTime);osc.frequency.exponentialRampToValueAtTime(Math.max(50,f*.62),audio.currentTime+d);gain.gain.setValueAtTime(.065,audio.currentTime);gain.gain.exponentialRampToValueAtTime(.001,audio.currentTime+d);osc.connect(gain);gain.connect(audio.destination);osc.start();osc.stop(audio.currentTime+d)}catch(e){}}
-function updateHud(){$('level').textContent=level+' / 3';$('time').textContent=Math.max(0,10-sec).toFixed(1)+' с';$('hits').textContent=front+' / 3';$('score').textContent=points;for(let i=1;i<=3;i++)$('cup'+i).classList.toggle('got',i<=cups)}
+function updateHud(){
+ $('level').textContent=level+' / 3';$('time').textContent=Math.max(0,10-sec).toFixed(1)+' с';
+ $('hits').textContent=front+' / 3';$('score').textContent=points;
+ for(let i=1;i<=3;i++)$('cup'+i).classList.toggle('got',i<=cups);
+ const tag=$('driveState');
+ tag.textContent=jump>0?'🚀 МАШИНА В ПОЛЁТЕ':keys.down?'▼ ЗАДНИЙ ХОД':keys.up?'▲ ВПЕРЁД +':keys.gas?'⚡ УСКОРЕНИЕ':'▲ ВПЕРЁД';
+ tag.classList.toggle('reverse',keys.down&&jump<=0);
+ tag.classList.toggle('jump',jump>0);
+}
 function release(){Object.keys(keys).forEach(k=>keys[k]=false);document.querySelectorAll('.ctrl').forEach(b=>b.classList.remove('on'))}
 function dialog(icon,title,desc,btn){$('symbol').textContent=icon;$('heading').textContent=title;$('message').textContent=desc;$('play').textContent=btn;$('dialogLayer').classList.remove('hide');$('stop').disabled=true;release();updateHud()}
-function reset(){mode='running';level=1;sec=0;elapsed=0;points=0;cups=0;front=0;shunted=0;energy=1;scroll=0;player={x:0,z:.69};traffic=[];ramps=[];wrecks=[];sparks=[];grace=0;jump=0;flash=0;trafficDelay=.8;rampDelay=2.2;release();$('stop').disabled=false;$('dialogLayer').classList.add('hide');updateHud()}
+function reset(){mode='running';level=1;sec=0;elapsed=0;points=0;cups=0;front=0;shunted=0;energy=1;scroll=0;player={x:0,z:.69};traffic=[];ramps=[];wrecks=[];sparks=[];grace=0;jump=0;flash=0;distance=0;trafficDelay=.8;rampDelay=2.2;release();$('stop').disabled=false;$('dialogLayer').classList.add('hide');updateHud()}
 function finish(win){mode=win?'won':'lost';dialog(win?'🏆':'💥',win?'ЧЕМПИОН! Три кубка!':'Третье лобовое столкновение',win?'Все три уровня пройдены! 🏆🏆🏆 Набрано очков: '+points+'.':'Получено кубков: '+cups+'/3. Боковых таранов: '+shunted+'. Очки: '+points+'.','ИГРАТЬ ЕЩЁ РАЗ ↻');sound(win?880:115,.3,win?'triangle':'sawtooth')}
 function levelPassed(){cups=level;if(level>=3){finish(true);return}mode='leveldone';dialog('🏆','Кубок за уровень '+level+'!','Поздравляем! Кубков: '+cups+'/3. Следующий уровень быстрее. Лобовые столкновения сохраняются.','УРОВЕНЬ '+(level+1)+' →');sound(970,.19,'triangle')}
 function advance(){level++;sec=0;mode='running';traffic=[];ramps=[];wrecks=[];trafficDelay=.75;rampDelay=2;grace=.8;jump=0;$('stop').disabled=false;$('dialogLayer').classList.add('hide');updateHud()}
@@ -116,17 +129,27 @@ function update(dt){
   if(mode!=='running')return;
   sec+=dt;elapsed+=dt;
   if(sec>=10){sec=10;levelPassed();return}
-  grace=Math.max(0,grace-dt);jump=Math.max(0,jump-dt);flash=Math.max(0,flash-dt);
-  const throttle=keys.gas?1.4:keys.brake?.55:1;
-  const speed=(.28+(level-1)*.05)*throttle;
-  player.x=clamp(player.x+((keys.right?1:0)-(keys.left?1:0))*dt*1.18,-.86,.86);
-  player.z=clamp(player.z+((keys.up?1:0)-(keys.down?1:0))*dt*.24,.58,.78);
-  scroll=(scroll+speed*dt)%1;
+  grace=Math.max(0,grace-dt);
+  if(jump>0){
+    const before=jump;
+    jump=Math.max(0,jump-dt);
+    if(before>0&&jump===0){splash(player.x,player.z,'#ffecc5');sound(190,.09,'triangle')}
+  }
+  flash=Math.max(0,flash-dt);
+  // Forward/up increases distance and takes the car toward the horizon.
+  // Reverse/down moves the road in the opposite direction and car toward the viewer.
+  const reverse=keys.down&&!keys.up;
+  const speed=reverse?-(.21+(level-1)*.02)*(keys.gas?1.35:1):
+     (.28+(level-1)*.05)*(keys.up?1.6:1)*(keys.gas?1.55:1)*(keys.brake?.36:1);
+  player.x=clamp(player.x+((keys.right?1:0)-(keys.left?1:0))*dt*1.20,-.86,.86);
+  player.z=clamp(player.z+(reverse?.49:keys.up?-.49:(.69-player.z)*.45)*dt,.54,.83);
+  distance+=speed*dt;
+  scroll=((scroll+speed*dt)%1+1)%1;
   trafficDelay-=dt;if(trafficDelay<=0){spawnCar();trafficDelay=rand(1.05,1.45)-(level-1)*.16}
   rampDelay-=dt;if(rampDelay<=0){spawnRamp();rampDelay=rand(4.1,5.5)-(level-1)*.55}
   for(let i=ramps.length-1;i>=0;i--){
     const r=ramps[i];r.z+=(speed+.02)*dt;
-    if(Math.abs(r.z-player.z)<.062&&Math.abs(r.x-player.x)<.24&&jump<=0){jump=1.15;points+=90;sound(910,.21,'triangle');splash(player.x,player.z,'#75fff1');ramps.splice(i,1);continue}
+    if(Math.abs(r.z-player.z)<.067&&Math.abs(r.x-player.x)<.25&&jump<=0){jump=jumpDuration;points+=120;sound(910,.26,'triangle');splash(player.x,player.z,'#75fff1');ramps.splice(i,1);continue}
     if(r.z>1.21)ramps.splice(i,1);
   }
   for(let i=traffic.length-1;i>=0;i--){
@@ -231,10 +254,22 @@ function draw(){
   for(const r of traffic)if(r.z>.02&&r.z<1.15)scene.push({z:r.z,render:()=>car(r.x,r.z,r.color,r.model,false,0)});
   for(const r of wrecks)if(r.z>.02&&r.z<1.15)scene.push({z:r.z,render:()=>car(r.x,r.z,r.color,r.model,false,r.angle)});
   scene.sort((a,b)=>a.z-b.z);scene.forEach(r=>r.render());
-  const jumping=jump>0?Math.sin((1-jump/1.15)*Math.PI):0;
-  const p=pos(player.x,player.z),shadow=ctx.createRadialGradient(p.x,p.y,1,p.x,p.y,68);shadow.addColorStop(0,'#0008');shadow.addColorStop(1,'#0000');ctx.fillStyle=shadow;ctx.fillRect(p.x-70,p.y-65,140,120);
-  car(player.x,player.z-jumping*.045,'#8ceaf0','Z',true,((keys.right?1:0)-(keys.left?1:0))*.05);
-  if(jumping){ctx.fillStyle='#ffffffd5';ctx.font='900 17px system-ui';ctx.textAlign='center';ctx.fillText('🚀 ПРЫЖОК +90',p.x,p.y-123-jumping*23)}
+  // Car is physically elevated away from its fixed-on-road shadow for 1.45 seconds.
+  const jumping=jump>0?Math.max(0,Math.sin((1-jump/jumpDuration)*Math.PI)):0;
+  const airborne=jumping*115;
+  const p=pos(player.x,player.z);
+  ctx.save();ctx.translate(p.x,p.y-18);ctx.scale(1+jumping*.46,1+jumping*.2);
+  const shadow=ctx.createRadialGradient(0,0,3,0,0,70);
+  shadow.addColorStop(0,'rgba(0,11,18,'+(.66-jumping*.22)+')');
+  shadow.addColorStop(1,'rgba(0,0,0,0)');
+  ctx.fillStyle=shadow;ctx.fillRect(-75,-70,150,140);ctx.restore();
+  car(player.x,player.z,'#8ceaf0','Z',true,jumping*.075+((keys.right?1:0)-(keys.left?1:0))*.045,airborne);
+  if(jumping){
+    ctx.save();ctx.textAlign='center';ctx.font='900 21px system-ui';
+    ctx.shadowColor='#003247';ctx.shadowBlur=8;ctx.fillStyle='#fff0ac';
+    ctx.fillText('🚀 РЕАЛЬНЫЙ ПРЫЖОК +120',p.x,p.y-160-airborne);
+    ctx.restore();
+  }
   if(flash>0){ctx.fillStyle='rgba(255,42,70,'+(flash*.28)+')';ctx.fillRect(0,0,W,H)}
   for(const sp of sparks){const q=pos(sp.x,sp.z);ctx.globalAlpha=clamp(sp.life*2,0,1);ctx.fillStyle=sp.col;ctx.fillRect(q.x,q.y,5,5)}ctx.globalAlpha=1;
   if(mode==='running'){rr(W/2-93,53,186,33,14,'#091c2dc8');ctx.font='bold 17px system-ui';ctx.textAlign='center';ctx.fillStyle='#effcff';ctx.fillText('УРОВЕНЬ '+level+' / 3',W/2,75)}
